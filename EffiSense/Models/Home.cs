@@ -8,6 +8,8 @@
 
     public virtual ApplicationUser User { get; set; }
     public virtual ICollection<Appliance> Appliances { get; set; }
+    
+
 
 }
 

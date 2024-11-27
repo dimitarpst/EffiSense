@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore; 
 
 namespace EffiSense.Controllers
 {
@@ -13,6 +14,7 @@ namespace EffiSense.Controllers
     public class AppliancesController : Controller
     {
         private readonly ApplicationDbContext _context;
+     
 
         public AppliancesController(ApplicationDbContext context)
         {
@@ -22,8 +24,14 @@ namespace EffiSense.Controllers
         // GET: Appliances
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Appliances.Include(a => a.Home);
-            return View(await applicationDbContext.ToListAsync());
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+         
+            var appliances = await _context.Appliances
+                .Where(a => a.Home.UserId == userId)
+                .ToListAsync();
+
+            return View(appliances);
         }
 
         // GET: Appliances/Details/5
@@ -34,17 +42,17 @@ namespace EffiSense.Controllers
                 return NotFound();
             }
 
-            var appliance = await _context.Appliances
-                .Include(a => a.Home)
-                .FirstOrDefaultAsync(m => m.ApplianceId == id);
-            if (appliance == null)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var home = await _context.Homes
+                .FirstOrDefaultAsync(h => h.HomeId == id && h.UserId == userId);
+
+            if (home == null)
             {
-                return NotFound();
+                return Unauthorized(); 
             }
 
-            return View(appliance);
+            return View(home);
         }
-
         // GET: Appliances/Create
         public IActionResult Create()
         {
@@ -157,7 +165,20 @@ namespace EffiSense.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        public async Task<IActionResult> TotalEnergyUsage()
+        {
+            
+            var appliances = await _context.Appliances
+                .Where(a => a.IsActive)
+                .ToListAsync();
 
+           
+            var totalEnergy = EnergyHelper.CalculateEnergy(appliances);
+
+          
+            ViewBag.TotalEnergyConsumption = totalEnergy;
+            return View();
+        }
         private bool ApplianceExists(int id)
         {
             return _context.Appliances.Any(e => e.ApplianceId == id);

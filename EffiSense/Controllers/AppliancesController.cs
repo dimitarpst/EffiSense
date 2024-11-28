@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,17 +14,23 @@ namespace EffiSense.Controllers
     public class AppliancesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AppliancesController(ApplicationDbContext context)
+        public AppliancesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        // GET: Appliances
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Appliances.Include(a => a.Home);
-            return View(await applicationDbContext.ToListAsync());
+            var user = await _userManager.GetUserAsync(User);
+
+            var appliances = await _context.Appliances
+                .Where(a => a.Home.UserId == user.Id)
+                .ToListAsync();
+
+            return View(appliances);
         }
 
         // GET: Appliances/Details/5
@@ -45,32 +52,45 @@ namespace EffiSense.Controllers
             return View(appliance);
         }
 
-        // GET: Appliances/Create
         public IActionResult Create()
         {
-            ViewData["HomeId"] = new SelectList(_context.Homes, "HomeId", "HomeId");
+            var user = _userManager.GetUserAsync(User).Result;
+
+            var homes = _context.Homes.Where(h => h.UserId == user.Id).ToList();
+
+            ViewData["HomeId"] = new SelectList(homes, "HomeId", "HomeId");
             return View();
         }
 
-        // POST: Appliances/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ApplianceId,HomeId,Name,EnergyConsumption,IsActive")] Appliance appliance)
         {
             ModelState.Remove("Home");
+
+            var user = await _userManager.GetUserAsync(User);
+            var home = await _context.Homes.FindAsync(appliance.HomeId);
+
+            if (home == null || home.UserId != user.Id)
+            {
+                return Forbid();  
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(appliance);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["HomeId"] = new SelectList(_context.Homes, "HomeId", "HomeId", appliance.HomeId);
+
+            var homes = _context.Homes.Where(h => h.UserId == user.Id).ToList();
+            ViewData["HomeId"] = new SelectList(homes, "HomeId", "HomeId", appliance.HomeId);
             return View(appliance);
         }
 
-        // GET: Appliances/Edit/5
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -83,21 +103,37 @@ namespace EffiSense.Controllers
             {
                 return NotFound();
             }
-            ViewData["HomeId"] = new SelectList(_context.Homes, "HomeId", "HomeId", appliance.HomeId);
+
+            var user = await _userManager.GetUserAsync(User);
+            var home = await _context.Homes.FindAsync(appliance.HomeId);
+
+            if (home == null || home.UserId != user.Id)
+            {
+                return Forbid(); 
+            }
+
+            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HomeId", appliance.HomeId);
             return View(appliance);
         }
 
-        // POST: Appliances/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ApplianceId,HomeId,Name,EnergyConsumption,IsActive")] Appliance appliance)
         {
             ModelState.Remove("Home");
+
             if (id != appliance.ApplianceId)
             {
                 return NotFound();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            var home = await _context.Homes.FindAsync(appliance.HomeId);
+
+            if (home == null || home.UserId != user.Id)
+            {
+                return Forbid();  
             }
 
             if (ModelState.IsValid)
@@ -120,7 +156,8 @@ namespace EffiSense.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["HomeId"] = new SelectList(_context.Homes, "HomeId", "HomeId", appliance.HomeId);
+
+            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HomeId", appliance.HomeId);
             return View(appliance);
         }
 
@@ -135,15 +172,23 @@ namespace EffiSense.Controllers
             var appliance = await _context.Appliances
                 .Include(a => a.Home)
                 .FirstOrDefaultAsync(m => m.ApplianceId == id);
+
             if (appliance == null)
             {
                 return NotFound();
             }
 
+            var user = await _userManager.GetUserAsync(User);
+
+            if (appliance.Home.UserId != user.Id)
+            {
+                return Forbid(); 
+            }
+
             return View(appliance);
         }
 
-        // POST: Appliances/Delete/5
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -151,16 +196,24 @@ namespace EffiSense.Controllers
             var appliance = await _context.Appliances.FindAsync(id);
             if (appliance != null)
             {
+                var user = await _userManager.GetUserAsync(User);
+                var home = await _context.Homes.FindAsync(appliance.HomeId);
+
+                if (home.UserId != user.Id)
+                {
+                    return Forbid(); 
+                }
+
                 _context.Appliances.Remove(appliance);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
         private bool ApplianceExists(int id)
         {
             return _context.Appliances.Any(e => e.ApplianceId == id);
         }
+
     }
 }

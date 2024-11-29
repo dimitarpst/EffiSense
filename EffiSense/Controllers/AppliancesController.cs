@@ -89,8 +89,7 @@ namespace EffiSense.Controllers
         }
 
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        // GET: Appliances/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -109,7 +108,7 @@ namespace EffiSense.Controllers
 
             if (home == null || home.UserId != user.Id)
             {
-                return Forbid(); 
+                return Forbid();
             }
 
             ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HomeId", appliance.HomeId);
@@ -117,6 +116,8 @@ namespace EffiSense.Controllers
         }
 
 
+
+        // POST: Appliances/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ApplianceId,HomeId,Name,EnergyConsumption,IsActive")] Appliance appliance)
@@ -133,7 +134,7 @@ namespace EffiSense.Controllers
 
             if (home == null || home.UserId != user.Id)
             {
-                return Forbid();  
+                return Forbid();
             }
 
             if (ModelState.IsValid)
@@ -160,6 +161,7 @@ namespace EffiSense.Controllers
             ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HomeId", appliance.HomeId);
             return View(appliance);
         }
+
 
         // GET: Appliances/Delete/5
         public async Task<IActionResult> Delete(int? id)

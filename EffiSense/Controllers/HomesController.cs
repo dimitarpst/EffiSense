@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,17 +14,23 @@ namespace EffiSense.Controllers
     public class HomesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public HomesController(ApplicationDbContext context)
+        public HomesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        // GET: Homes
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Homes.Include(h => h.User);
-            return View(await applicationDbContext.ToListAsync());
+            var user = await _userManager.GetUserAsync(User);
+
+            var homes = await _context.Homes
+                .Where(h => h.UserId == user.Id)
+                .ToListAsync();
+
+            return View(homes);
         }
 
         // GET: Homes/Details/5
@@ -48,26 +55,34 @@ namespace EffiSense.Controllers
         // GET: Homes/Create
         public IActionResult Create()
         {
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
+            var user = _userManager.GetUserAsync(User).Result;
+
+            ViewData["UserId"] = user.Id;
+
             return View();
         }
 
         // POST: Homes/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("HomeId,UserId,Size,HeatingType,NumberOfAppliances")] Home home)
+        public async Task<IActionResult> Create([Bind("HomeId,Size,HeatingType,NumberOfAppliances")] Home home)
         {
             ModelState.Remove("User");
             ModelState.Remove("Appliances");
+            ModelState.Remove("UserId"); 
+
             if (ModelState.IsValid)
             {
+                var user = await _userManager.GetUserAsync(User);
+
+                home.UserId = user.Id;
+
                 _context.Add(home);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", home.UserId);
+
+            ViewData["UserId"] = home.UserId;
             return View(home);
         }
 
@@ -84,22 +99,38 @@ namespace EffiSense.Controllers
             {
                 return NotFound();
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", home.UserId);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (home.UserId != user.Id)
+            {
+                return Forbid();
+            }
+
+            ViewData["UserId"] = home.UserId;
             return View(home);
         }
 
+
         // POST: Homes/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("HomeId,UserId,Size,HeatingType,NumberOfAppliances")] Home home)
+        public async Task<IActionResult> Edit(int id, [Bind("HomeId,Size,HeatingType,NumberOfAppliances")] Home home)
         {
-            ModelState.Remove("User");
-            ModelState.Remove("Appliances");
+            ModelState.Remove("User"); 
+            ModelState.Remove("Appliances"); 
+            ModelState.Remove("UserId"); 
+
             if (id != home.HomeId)
             {
                 return NotFound();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            home.UserId = user.Id;
+
+            if (home.UserId != user.Id) 
+            {
+                return Forbid(); 
             }
 
             if (ModelState.IsValid)
@@ -122,9 +153,11 @@ namespace EffiSense.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", home.UserId);
+
+            ViewData["UserId"] = home.UserId;
             return View(home);
         }
+
 
         // GET: Homes/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -142,6 +175,12 @@ namespace EffiSense.Controllers
                 return NotFound();
             }
 
+            var user = await _userManager.GetUserAsync(User);
+            if (home.UserId != user.Id) 
+            {
+                return Forbid();
+            }
+
             return View(home);
         }
 
@@ -153,12 +192,19 @@ namespace EffiSense.Controllers
             var home = await _context.Homes.FindAsync(id);
             if (home != null)
             {
+                var user = await _userManager.GetUserAsync(User);
+                if (home.UserId != user.Id) 
+                {
+                    return Forbid();
+                }
+
                 _context.Homes.Remove(home);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool HomeExists(int id)
         {

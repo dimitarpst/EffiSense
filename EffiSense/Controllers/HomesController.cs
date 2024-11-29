@@ -55,31 +55,36 @@ namespace EffiSense.Controllers
         // GET: Homes/Create
         public IActionResult Create()
         {
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
+            var user = _userManager.GetUserAsync(User).Result;
+
+            ViewData["UserId"] = user.Id;
+
             return View();
         }
 
         // POST: Homes/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("HomeId,UserId,Size,HeatingType,NumberOfAppliances")] Home home)
+        public async Task<IActionResult> Create([Bind("HomeId,Size,HeatingType,NumberOfAppliances")] Home home)
         {
             ModelState.Remove("User");
-            ModelState.Remove("Appliances"); 
+            ModelState.Remove("Appliances");
+            ModelState.Remove("UserId"); 
 
             if (ModelState.IsValid)
             {
                 var user = await _userManager.GetUserAsync(User);
-                home.UserId = user.Id; 
+
+                home.UserId = user.Id;
 
                 _context.Add(home);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", home.UserId);
+
+            ViewData["UserId"] = home.UserId;
             return View(home);
         }
-
 
         // GET: Homes/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -96,22 +101,24 @@ namespace EffiSense.Controllers
             }
 
             var user = await _userManager.GetUserAsync(User);
-            if (home.UserId != user.Id) 
+            if (home.UserId != user.Id)
             {
-                return Forbid(); 
+                return Forbid();
             }
 
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", home.UserId);
+            ViewData["UserId"] = home.UserId;
             return View(home);
         }
+
 
         // POST: Homes/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("HomeId,UserId,Size,HeatingType,NumberOfAppliances")] Home home)
+        public async Task<IActionResult> Edit(int id, [Bind("HomeId,Size,HeatingType,NumberOfAppliances")] Home home)
         {
             ModelState.Remove("User"); 
             ModelState.Remove("Appliances"); 
+            ModelState.Remove("UserId"); 
 
             if (id != home.HomeId)
             {
@@ -119,9 +126,11 @@ namespace EffiSense.Controllers
             }
 
             var user = await _userManager.GetUserAsync(User);
+            home.UserId = user.Id;
+
             if (home.UserId != user.Id) 
             {
-                return Forbid();
+                return Forbid(); 
             }
 
             if (ModelState.IsValid)
@@ -144,9 +153,11 @@ namespace EffiSense.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", home.UserId);
+
+            ViewData["UserId"] = home.UserId;
             return View(home);
         }
+
 
         // GET: Homes/Delete/5
         public async Task<IActionResult> Delete(int? id)

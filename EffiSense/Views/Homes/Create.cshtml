@@ -19,6 +19,11 @@
             </div>
 
             <div class="form-group">
+                <label asp-for="HouseName" class="control-label"></label>
+                <input asp-for="HouseName" class="form-control" />
+                <span asp-validation-for="HouseName" class="text-danger"></span>
+            </div>            
+            <div class="form-group">
                 <label asp-for="Size" class="control-label"></label>
                 <input asp-for="Size" class="form-control" />
                 <span asp-validation-for="Size" class="text-danger"></span>
@@ -29,10 +34,27 @@
                 <span asp-validation-for="HeatingType" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="NumberOfAppliances" class="control-label"></label>
-                <input asp-for="NumberOfAppliances" class="form-control" />
-                <span asp-validation-for="NumberOfAppliances" class="text-danger"></span>
+                <label asp-for="Location" class="control-label"></label>
+                <input asp-for="Location" class="form-control" />
+                <span asp-validation-for="Location" class="text-danger"></span>
+            </div>            
+            <div class="form-group">
+                <label asp-for="Address" class="control-label"></label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
             </div>
+            <div class="form-group">
+                <label asp-for="BuildingType" class="control-label"></label>
+                <input asp-for="BuildingType" class="form-control" />
+                <span asp-validation-for="BuildingType" class="text-danger"></span>
+            </div>            
+            <div class="form-group">
+                <label asp-for="InsulationLevel" class="control-label"></label>
+                <input asp-for="InsulationLevel" class="form-control" />
+                <span asp-validation-for="InsulationLevel" class="text-danger"></span>
+            </div>            
+
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>

@@ -13,13 +13,25 @@
     <thead>
         <tr>
             <th>
+                @Html.DisplayNameFor(model => model.HouseName)
+            </th>            
+            <th>
                 @Html.DisplayNameFor(model => model.Size)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.HeatingType)
-            </th>
+            </th>            
             <th>
-                @Html.DisplayNameFor(model => model.NumberOfAppliances)
+                @Html.DisplayNameFor(model => model.Location)
+            </th>                 
+            <th>
+                @Html.DisplayNameFor(model => model.Address)
+            </th>            
+            <th>
+                @Html.DisplayNameFor(model => model.BuildingType)
+            </th>            
+            <th>
+                @Html.DisplayNameFor(model => model.InsulationLevel)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.User)
@@ -31,14 +43,27 @@
 @foreach (var item in Model) {
         <tr>
             <td>
+                @Html.DisplayFor(modelItem => item.HouseName)
+            </td>            
+            <td>
                 @Html.DisplayFor(modelItem => item.Size)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.HeatingType)
-            </td>
+            </td>            
             <td>
-                @Html.DisplayFor(modelItem => item.NumberOfAppliances)
+                @Html.DisplayFor(modelItem => item.Location)
+            </td>              
+            <td>
+                @Html.DisplayFor(modelItem => item.Address)
+            </td>            
+            <td>
+                @Html.DisplayFor(modelItem => item.BuildingType)
+            </td>           
+            <td>
+                @Html.DisplayFor(modelItem => item.InsulationLevel)
             </td>
+
             <td>
                 @Html.DisplayFor(modelItem => item.User.Id)
             </td>

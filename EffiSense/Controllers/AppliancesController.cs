@@ -64,7 +64,7 @@ namespace EffiSense.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ApplianceId,HomeId,Name,EnergyConsumption,IsActive")] Appliance appliance)
+        public async Task<IActionResult> Create([Bind("ApplianceId,HomeId,Name,Brand,IsActive,PowerRating")] Appliance appliance)
         {
             ModelState.Remove("Home");
 
@@ -120,7 +120,7 @@ namespace EffiSense.Controllers
         // POST: Appliances/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ApplianceId,HomeId,Name,EnergyConsumption,IsActive")] Appliance appliance)
+        public async Task<IActionResult> Edit(int id, [Bind("ApplianceId,HomeId,Name,Brand,IsActive,PowerRating")] Appliance appliance)
         {
             ModelState.Remove("Home");
 
@@ -203,8 +203,11 @@ namespace EffiSense.Controllers
 
                 if (home.UserId != user.Id)
                 {
-                    return Forbid(); 
+                    return Forbid();
                 }
+
+                var usages = _context.Usages.Where(u => u.ApplianceId == id);
+                _context.Usages.RemoveRange(usages);
 
                 _context.Appliances.Remove(appliance);
             }
@@ -212,6 +215,7 @@ namespace EffiSense.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
         private bool ApplianceExists(int id)
         {
             return _context.Appliances.Any(e => e.ApplianceId == id);

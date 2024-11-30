@@ -28,12 +28,14 @@ namespace EffiSense.Controllers
             var user = await _userManager.GetUserAsync(User);
 
             var applicationDbContext = _context.Usages
-                .Where(u => u.UserId == user.Id) 
+                .Where(u => u.UserId == user.Id)
                 .Include(u => u.Appliance)
+                .ThenInclude(a => a.Home) 
                 .Include(u => u.User);
 
             return View(await applicationDbContext.ToListAsync());
         }
+
 
 
         public async Task<IActionResult> Details(int? id)
@@ -45,17 +47,19 @@ namespace EffiSense.Controllers
 
             var usage = await _context.Usages
                 .Include(u => u.Appliance)
+                .ThenInclude(a => a.Home) 
                 .Include(u => u.User)
                 .FirstOrDefaultAsync(m => m.UsageId == id);
 
             var user = await _userManager.GetUserAsync(User);
             if (usage == null || usage.UserId != user.Id)
             {
-                return Forbid(); 
+                return Forbid();
             }
 
             return View(usage);
         }
+
 
         public IActionResult Create()
         {

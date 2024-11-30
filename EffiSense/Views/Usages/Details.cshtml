@@ -10,44 +10,50 @@
     <h4>Usage</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.User)
+        <dt class="col-sm-2">
+            Home ID
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.User.Id)
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Appliance.Home.HomeId) <!-- Display HomeId -->
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Appliance)
+
+        <dt class="col-sm-2">
+            Appliance
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Appliance.ApplianceId)
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Appliance.Name) <!-- Display Appliance Name -->
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Date)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Date)
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.EnergyUsed)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.EnergyUsed)
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.UsageFrequency)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.UsageFrequency)
         </dd>
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Duration)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Duration)
         </dd>
     </dl>
 </div>
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.UsageId">Edit</a> |
     <a asp-action="Index">Back to List</a>

@@ -40,14 +40,14 @@ namespace EffiSense.Controllers
                     Model = "gpt-3.5-turbo",
                     Messages = new[]
                     {
-                new ChatMessage(ChatMessageRole.System, "You are an assistant that provides energy-efficiency tips."),
+                new ChatMessage(ChatMessageRole.System, "You are an assistant that provides energy-efficiency tips. Your clients are European and use EU standards for measuring energy usage, as well as Celsius instead of Fahrenheit. Do not answer any questions that do not regard energy-efficiency. Try to use the data provided about specific appliances as much as possible. When outputing, DO NOT bold text and DO NOT use lists!"),
                 new ChatMessage(ChatMessageRole.User, prompt)
             },
                     MaxTokens = 150
                 };
 
                 var chatResult = await openAiApi.Chat.CreateChatCompletionAsync(chatRequest);
-                return chatResult.Choices[0].Message.Content.Trim();
+                return chatResult.Choices[0].Message.TextContent;//.Trim();
             }
             catch (Exception ex)
             {
@@ -60,18 +60,35 @@ namespace EffiSense.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
-            var topUsage = await _context.Usages
+            var appliancesList = await _context.Usages
                 .Include(u => u.Appliance)
                 .Where(u => u.UserId == user.Id)
-                .OrderByDescending(u => u.EnergyUsed)
-                .FirstOrDefaultAsync();
+                .OrderByDescending(u => u.UsageFrequency)
+                .ToListAsync();
+
+            var topUsage = appliancesList.OrderByDescending(u => u.EnergyUsed).FirstOrDefault();
 
             if (topUsage == null)
             {
                 return Json(new { success = false, message = "No usage data available." });
             }
 
-            string aiPrompt = $"Based on my energy usage, my most energy-intensive device is {topUsage.Appliance.Name} which consumes {topUsage.EnergyUsed} kWh daily. {userPrompt} Provide a suggestion to optimize my energy consumption.";
+            var homesList = await _context.Homes
+                .Where(u => u.UserId == user.Id)
+                .ToListAsync();
+
+            string homeDetails = $"These are the characteristics of my {homesList.Count} homes: ";
+            foreach (var home in homesList)
+            {
+                homeDetails+=($"{home.HouseName} of type {home.BuildingType}, which has a footprint of {home.Size} m^2. ");
+            }
+            string applianceDetails = $"The following are the appliances I use most often (the lower the rating is the better):";
+            foreach (var appliance in appliancesList.Take(3))
+            {
+                applianceDetails+=($"{appliance.Appliance.Name} with a {appliance.Appliance.PowerRating} rating, ");
+            }
+            applianceDetails+=($"... with my highest consumption coming from {topUsage.Appliance.Name} which consumes {topUsage.EnergyUsed} kWh daily");
+            string aiPrompt = $"{homeDetails}.{applianceDetails}. Provide a suggestion to help with this problem: {userPrompt}.";
 
             var suggestion = await GetEnergyEfficiencyTips(aiPrompt);
 
@@ -90,10 +107,6 @@ namespace EffiSense.Controllers
 
             return View(await applicationDbContext.ToListAsync());
         }
-
-
-
-
 
         public async Task<IActionResult> Details(int? id)
         {
@@ -122,7 +135,7 @@ namespace EffiSense.Controllers
         {
             var user = _userManager.GetUserAsync(User).Result;
 
-            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "Size");
+            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName");
 
             ViewData["ApplianceId"] = new SelectList(Enumerable.Empty<SelectListItem>());
 

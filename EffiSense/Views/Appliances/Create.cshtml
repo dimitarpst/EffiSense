@@ -12,6 +12,7 @@
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
             <div class="form-group">
                 <label asp-for="HomeId" class="control-label"></label>
                 <select asp-for="HomeId" class ="form-control" asp-items="ViewBag.HomeId"></select>
@@ -20,17 +21,23 @@
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
+            </div>            
             <div class="form-group">
-                <label asp-for="EnergyConsumption" class="control-label"></label>
-                <input asp-for="EnergyConsumption" class="form-control" />
-                <span asp-validation-for="EnergyConsumption" class="text-danger"></span>
+                <label asp-for="Brand" class="control-label"></label>
+                <input asp-for="Brand" class="form-control" />
+                <span asp-validation-for="Brand" class="text-danger"></span>
             </div>
             <div class="form-group form-check">
                 <label class="form-check-label">
                     <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
                 </label>
             </div>
+            <div class="form-group">
+                <label asp-for="PowerRating" class="control-label"></label>
+                <input asp-for="PowerRating" class="form-control" />
+                <span asp-validation-for="PowerRating" class="text-danger"></span>
+            </div>
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -43,5 +50,28 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#usageForm").submit(function (e) {
+                e.preventDefault();
+
+                var formData = $(this).serialize();  // Събиране на данни от формуляра
+
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("Create")",
+                    data: formData,
+                    success: function (response) {
+                        alert("Usage data saved successfully.");
+                        // Можете да добавите тук обработка за обновяване на изгледа или други действия.
+                    },
+                    error: function () {
+                        alert("Error saving usage data.");
+                    }
+                });
+            });
+        });
+    </script>
 }
+

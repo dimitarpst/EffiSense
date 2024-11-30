@@ -10,4 +10,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Home> Homes { get; set; }
     public DbSet<Appliance> Appliances { get; set; }
+    public DbSet<Usage> Usages { get; set; }
+
 }

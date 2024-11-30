@@ -16,9 +16,11 @@ namespace EffiSense.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
+
         public HomesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+
             _userManager = userManager;
         }
 
@@ -34,6 +36,7 @@ namespace EffiSense.Controllers
         }
 
         // GET: Homes/Details/5
+
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -52,7 +55,9 @@ namespace EffiSense.Controllers
             return View(home);
         }
 
+
         // GET: Homes/Create
+
         public IActionResult Create()
         {
             var user = _userManager.GetUserAsync(User).Result;
@@ -63,9 +68,10 @@ namespace EffiSense.Controllers
         }
 
         // POST: Homes/Create
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("HomeId,Size,HeatingType,NumberOfAppliances")] Home home)
+        public async Task<IActionResult> Create([Bind("HomeId,Size,HeatingType,Location,BuildingType,InsulationLevel,HouseName,Address")] Home home)
         {
             ModelState.Remove("User");
             ModelState.Remove("Appliances");
@@ -85,6 +91,8 @@ namespace EffiSense.Controllers
             ViewData["UserId"] = home.UserId;
             return View(home);
         }
+
+
 
         // GET: Homes/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -111,10 +119,14 @@ namespace EffiSense.Controllers
         }
 
 
+
+
+
+
         // POST: Homes/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("HomeId,Size,HeatingType,NumberOfAppliances")] Home home)
+        public async Task<IActionResult> Edit(int id, [Bind("HomeId,Size,HeatingType,Location,BuildingType,InsulationLevel,HouseName,Address")] Home home)
         {
             ModelState.Remove("User"); 
             ModelState.Remove("Appliances"); 
@@ -159,6 +171,8 @@ namespace EffiSense.Controllers
         }
 
 
+
+
         // GET: Homes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -184,7 +198,9 @@ namespace EffiSense.Controllers
             return View(home);
         }
 
-        // POST: Homes/Delete/5
+
+
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -193,9 +209,19 @@ namespace EffiSense.Controllers
             if (home != null)
             {
                 var user = await _userManager.GetUserAsync(User);
-                if (home.UserId != user.Id) 
+
+                if (home.UserId != user.Id)
                 {
                     return Forbid();
+                }
+
+                var appliances = _context.Appliances.Where(a => a.HomeId == id).ToList();
+                foreach (var appliance in appliances)
+                {
+                    var usages = _context.Usages.Where(u => u.ApplianceId == appliance.ApplianceId);
+                    _context.Usages.RemoveRange(usages);
+
+                    _context.Appliances.Remove(appliance);
                 }
 
                 _context.Homes.Remove(home);
@@ -204,6 +230,7 @@ namespace EffiSense.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
 
 
         private bool HomeExists(int id)

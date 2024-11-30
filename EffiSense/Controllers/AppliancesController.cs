@@ -206,7 +206,6 @@ namespace EffiSense.Controllers
                     return Forbid();
                 }
 
-                // Изтриваме всички свързани Usage записи
                 var usages = _context.Usages.Where(u => u.ApplianceId == id);
                 _context.Usages.RemoveRange(usages);
 

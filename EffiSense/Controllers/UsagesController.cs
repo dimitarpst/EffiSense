@@ -135,9 +135,6 @@ namespace EffiSense.Controllers
             return View(usage);
         }
 
-
-
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("UsageId,UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency,Duration")] Usage usage)
@@ -163,7 +160,7 @@ namespace EffiSense.Controllers
                 return Forbid();
             }
 
-            usage.Date = usage.Date.Date.Add(usage.Time.TimeOfDay); // Combine date and time.
+            usage.Date = usage.Date.Date.Add(usage.Time.TimeOfDay); 
 
             if (ModelState.IsValid)
             {
@@ -253,18 +250,25 @@ namespace EffiSense.Controllers
             return Json(appliances);
         }
         [HttpGet]
-        public async Task<IActionResult> FilterByDate(DateTime date)
+        public async Task<IActionResult> FilterByDate(DateTime? date)
         {
             var user = await _userManager.GetUserAsync(User);
 
-            var filteredUsages = await _context.Usages
-                .Where(u => u.UserId == user.Id && u.Date.Date == date.Date)
+            var usagesQuery = _context.Usages
                 .Include(u => u.Appliance)
                 .ThenInclude(a => a.Home)
-                .ToListAsync();
+                .Where(u => u.UserId == user.Id);
 
+            if (date.HasValue)
+            {
+                usagesQuery = usagesQuery.Where(u => u.Date.Date == date.Value.Date);
+            }
+
+            var filteredUsages = await usagesQuery.ToListAsync();
             return PartialView("_UsageTableRows", filteredUsages);
         }
+
+
 
 
         private bool UsageExists(int id)

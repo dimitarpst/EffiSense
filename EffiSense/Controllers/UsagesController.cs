@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using OpenAI_API;
+using OpenAI_API.Chat;
+
 
 namespace EffiSense.Controllers
 {
@@ -16,11 +19,63 @@ namespace EffiSense.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IConfiguration _configuration;
 
-        public UsagesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public UsagesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IConfiguration configuration)
         {
             _context = context;
             _userManager = userManager;
+            _configuration = configuration;
+        }
+
+        private async Task<string> GetEnergyEfficiencyTips(string prompt)
+        {
+            try
+            {
+                var apiKey = _configuration["OpenAI:ApiKey"];
+                var openAiApi = new OpenAIAPI(apiKey);
+
+                var chatRequest = new ChatRequest
+                {
+                    Model = "gpt-3.5-turbo",
+                    Messages = new[]
+                    {
+                new ChatMessage(ChatMessageRole.System, "You are an assistant that provides energy-efficiency tips."),
+                new ChatMessage(ChatMessageRole.User, prompt)
+            },
+                    MaxTokens = 150
+                };
+
+                var chatResult = await openAiApi.Chat.CreateChatCompletionAsync(chatRequest);
+                return chatResult.Choices[0].Message.Content.Trim();
+            }
+            catch (Exception ex)
+            {
+                return $"Error retrieving tips: {ex.Message}";
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetDashboardSuggestion([FromBody] string userPrompt)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var topUsage = await _context.Usages
+                .Include(u => u.Appliance)
+                .Where(u => u.UserId == user.Id)
+                .OrderByDescending(u => u.EnergyUsed)
+                .FirstOrDefaultAsync();
+
+            if (topUsage == null)
+            {
+                return Json(new { success = false, message = "No usage data available." });
+            }
+
+            string aiPrompt = $"Based on my energy usage, my most energy-intensive device is {topUsage.Appliance.Name} which consumes {topUsage.EnergyUsed} kWh daily. {userPrompt} Provide a suggestion to optimize my energy consumption.";
+
+            var suggestion = await GetEnergyEfficiencyTips(aiPrompt);
+
+            return Json(new { success = true, suggestion });
         }
 
         public async Task<IActionResult> Index()

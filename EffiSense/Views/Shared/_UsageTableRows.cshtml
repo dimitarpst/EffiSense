@@ -3,12 +3,11 @@
 @foreach (var item in Model)
 {
     <tr>
-        <td>@Html.DisplayFor(modelItem => item.Appliance.Home.HomeId)</td>
+        <td>@Html.DisplayFor(modelItem => item.Appliance.Home.HouseName)</td>
         <td>@Html.DisplayFor(modelItem => item.Appliance.Name)</td>
         <td>@Html.DisplayFor(modelItem => item.Date)</td>
         <td>@Html.DisplayFor(modelItem => item.EnergyUsed)</td>
         <td>@Html.DisplayFor(modelItem => item.UsageFrequency)</td>
-        <td>@Html.DisplayFor(modelItem => item.Duration)</td>
         <td>
             <a asp-action="Edit" asp-route-id="@item.UsageId">Edit</a> |
             <a asp-action="Details" asp-route-id="@item.UsageId">Details</a> |

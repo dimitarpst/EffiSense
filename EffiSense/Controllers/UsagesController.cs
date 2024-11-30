@@ -138,6 +138,14 @@ namespace EffiSense.Controllers
             ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName");
 
             ViewData["ApplianceId"] = new SelectList(Enumerable.Empty<SelectListItem>());
+            ViewData["UsageFrequencyOptions"] = new Dictionary<int, string>
+                {
+                    { 1, "Rarely" },
+                    { 2, "Sometimes" },
+                    { 3, "Often" },
+                    { 4, "Very Often" },
+                    { 5, "Always" }
+                };
 
             return View();
         }
@@ -145,7 +153,7 @@ namespace EffiSense.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UsageId,UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency,Duration")] Usage usage)
+        public async Task<IActionResult> Create([Bind("UsageId,UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency")] Usage usage)
         {
             ModelState.Remove("User");
             ModelState.Remove("Appliance");
@@ -200,14 +208,22 @@ namespace EffiSense.Controllers
             }
 
             ViewData["SelectedHomeId"] = usage.Appliance.HomeId;
-            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "Size", usage.Appliance.HomeId);
-            ViewData["SelectedApplianceId"] = usage.ApplianceId; 
+            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName", usage.Appliance.HomeId);
+            ViewData["SelectedApplianceId"] = usage.ApplianceId;
+            ViewData["UsageFrequencyOptions"] = new Dictionary<int, string>
+                {
+                    { 1, "Rarely" },
+                    { 2, "Sometimes" },
+                    { 3, "Often" },
+                    { 4, "Very Often" },
+                    { 5, "Always" }
+                };
             return View(usage);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UsageId,UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency,Duration")] Usage usage)
+        public async Task<IActionResult> Edit(int id, [Bind("UsageId,UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency")] Usage usage)
         {
             ModelState.Remove("User");
             ModelState.Remove("Appliance");

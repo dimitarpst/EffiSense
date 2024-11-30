@@ -17,17 +17,10 @@
             @Html.DisplayFor(model => model.Name)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Brand)
+            House Name
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Brand)
-        </dd>
-
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.IsActive)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.IsActive)
+            @Html.DisplayFor(model => model.Home.HouseName)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Brand)
@@ -36,10 +29,10 @@
             @Html.DisplayFor(model => model.Brand)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Home)
+            Power Rating
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Home.HomeId)
+            @Html.DisplayFor(model => model.PowerRating)
         </dd>
     </dl>
 </div>

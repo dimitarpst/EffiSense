@@ -11,13 +11,8 @@ namespace EffiSense.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "DateTime",
-                table: "Usages",
-                newName: "Time");
-
             migrationBuilder.AddColumn<DateTime>(
-                name: "Date",
+                name: "Time",
                 table: "Usages",
                 type: "datetime2",
                 nullable: false,
@@ -27,14 +22,7 @@ namespace EffiSense.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Date",
-                table: "Usages");
 
-            migrationBuilder.RenameColumn(
-                name: "Time",
-                table: "Usages",
-                newName: "DateTime");
         }
     }
 }

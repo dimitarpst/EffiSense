@@ -33,7 +33,7 @@
 
             <div class="form-group">
                 <label asp-for="Date" class="control-label"></label>
-                <input asp-for="Date" class="form-control" type="date" />
+                <input asp-for="Date" class="form-control" id="usageDate" type="date" />
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
 
@@ -67,34 +67,10 @@
 </div>
 
 @section Scripts {
+
+    <script src="~/js/usageCreate.js"></script>
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $("#HomeId").change(function () {
-                var homeId = $(this).val();
-                var applianceDropdown = $("#ApplianceId");
-
-                applianceDropdown.empty().append('<option value="">Select Appliance</option>');
-
-                if (homeId) {
-                    $.ajax({
-                        url: '@Url.Action("GetAppliancesByHome", "Usages")',
-                        data: { homeId: homeId },
-                        success: function (data) {
-                            $.each(data, function (index, appliance) {
-                                applianceDropdown.append('<option value="' + appliance.applianceId + '">' + appliance.name + '</option>');
-                            });
-                        },
-                        error: function () {
-                            alert("Error fetching appliances.");
-                        }
-                    });
-                }
-            });
-        });
-    </script>
 }

@@ -77,39 +77,5 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $("#HomeId").change(function () {
-                var homeId = $(this).val();
-                var applianceDropdown = $("#ApplianceId");
-
-                applianceDropdown.empty().append('<option value="">Select Appliance</option>');
-
-                if (homeId) {
-                    $.ajax({
-                        url: '@Url.Action("GetAppliancesByHome", "Usages")',
-                        data: { homeId: homeId },
-                        success: function (data) {
-                            var selectedApplianceId = '@ViewData["SelectedApplianceId"]'; // Get the selected appliance from server
-                            $.each(data, function (index, appliance) {
-                                var selected = appliance.applianceId == selectedApplianceId ? 'selected' : '';
-                                applianceDropdown.append('<option value="' + appliance.applianceId + '" ' + selected + '>' + appliance.name + '</option>');
-                            });
-                        },
-                        error: function () {
-                            alert("Error fetching appliances.");
-                        }
-                    });
-                }
-            });
-
-            var selectedHomeId = $("#HomeId").val();
-            if (selectedHomeId) {
-                $("#HomeId").trigger("change");
-            }
-        });
-
-    </script>
+    <script src="~/js/usageEdit.js"></script>
 }

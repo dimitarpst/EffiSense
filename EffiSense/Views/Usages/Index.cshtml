@@ -59,27 +59,6 @@
 </table>
 
 @section Scripts {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $("#filterDate").change(function () {
-                var selectedDate = $(this).val();
-                if (selectedDate) {
-                    $.ajax({
-                        url: '@Url.Action("FilterByDate", "Usages")',
-                        data: { date: selectedDate },
-                        success: function (data) {
-                            $("#usageTableBody").html(data);
-                        },
-                        error: function () {
-                            alert("Error fetching data.");
-                        }
-                    });
-                } else {
-                    alert("Please select a date.");
-                }
-            });
-        });
-    </script>
+    <script src="~/js/usagesIndex.js"></script>
 }
 

@@ -50,7 +50,7 @@
                 <td>@Html.DisplayFor(modelItem => item.Appliance.Home.HouseName)</td>
                 <td>@Html.DisplayFor(modelItem => item.Appliance.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Date)</td>
-                <td>@Html.DisplayFor(modelItem => item.EnergyUsed) kWh</td>
+                <td>@Html.DisplayFor(modelItem => item.EnergyUsed)</td>
                 <td>@(usageFrequencyMap.ContainsKey(item.UsageFrequency) ? usageFrequencyMap[item.UsageFrequency] : "Unknown")</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.UsageId">Edit</a> |

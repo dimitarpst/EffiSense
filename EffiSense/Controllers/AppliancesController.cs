@@ -65,7 +65,7 @@ namespace EffiSense.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ApplianceId,HomeId,Name,Brand,IsActive,PowerRating")] Appliance appliance)
+        public async Task<IActionResult> Create([Bind("ApplianceId,HomeId,Name,Brand,PowerRating")] Appliance appliance)
         {
             ModelState.Remove("Home");
 
@@ -121,7 +121,7 @@ namespace EffiSense.Controllers
         // POST: Appliances/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ApplianceId,HomeId,Name,Brand,IsActive,PowerRating")] Appliance appliance)
+        public async Task<IActionResult> Edit(int id, [Bind("ApplianceId,HomeId,Name,Brand,PowerRating")] Appliance appliance)
         {
             ModelState.Remove("Home");
 

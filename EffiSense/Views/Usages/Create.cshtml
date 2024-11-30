@@ -14,7 +14,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="UserId" class="control-label"></label>
-                <input aps-for="UserId " type="text" class="form-control" value="@ViewData["UserId"]" readonly />
+                <input aps-for="UserId "type="text" class="form-control" value="@ViewData["UserId"]" readonly />
             </div>
             <div class="form-group">
                 <label asp-for="ApplianceId" class="control-label"></label>
@@ -52,28 +52,8 @@
 </div>
 
 @section Scripts {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $("#usageForm").submit(function (e) {
-                e.preventDefault();
-
-                var formData = $(this).serialize();  // Събиране на данни от формуляра
-
-                $.ajax({
-                    type: "POST",
-                    url: "@Url.Action("Create")",
-                    data: formData,
-                    success: function (response) {
-                        alert("Usage data saved successfully.");
-                        // Можете да добавите тук обработка за обновяване на изгледа или други действия.
-                    },
-                    error: function () {
-                        alert("Error saving usage data.");
-                    }
-                });
-            });
-        });
-    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
 

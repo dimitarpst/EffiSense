@@ -203,8 +203,12 @@ namespace EffiSense.Controllers
 
                 if (home.UserId != user.Id)
                 {
-                    return Forbid(); 
+                    return Forbid();
                 }
+
+                // Изтриваме всички свързани Usage записи
+                var usages = _context.Usages.Where(u => u.ApplianceId == id);
+                _context.Usages.RemoveRange(usages);
 
                 _context.Appliances.Remove(appliance);
             }
@@ -212,6 +216,7 @@ namespace EffiSense.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
         private bool ApplianceExists(int id)
         {
             return _context.Appliances.Any(e => e.ApplianceId == id);

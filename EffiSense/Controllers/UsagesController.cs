@@ -221,7 +221,6 @@ namespace EffiSense.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
         private bool UsageExists(int id)
         {
             return _context.Usages.Any(e => e.UsageId == id);

@@ -184,7 +184,6 @@ namespace EffiSense.Controllers
             return View(home);
         }
 
-        // POST: Homes/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -193,9 +192,19 @@ namespace EffiSense.Controllers
             if (home != null)
             {
                 var user = await _userManager.GetUserAsync(User);
-                if (home.UserId != user.Id) 
+
+                if (home.UserId != user.Id)
                 {
                     return Forbid();
+                }
+
+                var appliances = _context.Appliances.Where(a => a.HomeId == id).ToList();
+                foreach (var appliance in appliances)
+                {
+                    var usages = _context.Usages.Where(u => u.ApplianceId == appliance.ApplianceId);
+                    _context.Usages.RemoveRange(usages);
+
+                    _context.Appliances.Remove(appliance);
                 }
 
                 _context.Homes.Remove(home);
@@ -204,6 +213,7 @@ namespace EffiSense.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
 
 
         private bool HomeExists(int id)

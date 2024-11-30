@@ -288,7 +288,7 @@ namespace EffiSense.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UsageId"));
 
-                    b.Property<int>("ApplianceId")
+                    b.Property<int?>("ApplianceId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Date")
@@ -393,9 +393,7 @@ namespace EffiSense.Data.Migrations
                 {
                     b.HasOne("Appliance", "Appliance")
                         .WithMany()
-                        .HasForeignKey("ApplianceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ApplianceId");
 
                     b.HasOne("ApplicationUser", "User")
                         .WithMany()

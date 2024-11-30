@@ -8,7 +8,7 @@
     public string Location { get; set; } 
     public string Address { get; set; } 
     public string BuildingType { get; set; }
-    public double InsulationLevel { get; set; }
+    public string InsulationLevel { get; set; }
     public virtual ApplicationUser User { get; set; }
     public virtual ICollection<Appliance> Appliances { get; set; }
 }

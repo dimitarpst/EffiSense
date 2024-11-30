@@ -14,16 +14,17 @@
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Name)
-            </th>            
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Home.HouseName)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Brand)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsActive)
-            </th>
+            </th>           
             <th>
                 @Html.DisplayNameFor(model => model.PowerRating)
-            </th>
+            </th>           
+
             <th></th>
         </tr>
     </thead>
@@ -32,16 +33,17 @@
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
-            </td>           
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Home.HouseName)
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Brand)
-            </td>
+            </td>            
             <td>
-                @Html.DisplayFor(modelItem => item.IsActive)
-            </td>
-            <td>
-                    @Html.DisplayFor(modelItem => item.PowerRating)
-            </td>
+                @Html.DisplayFor(modelItem => item.PowerRating)
+            </td>            
+
             <td>
                 <a asp-action="Edit" asp-route-id="@item.ApplianceId">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.ApplianceId">Details</a> |

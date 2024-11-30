@@ -250,6 +250,19 @@ namespace EffiSense.Controllers
 
             return Json(appliances);
         }
+        [HttpGet]
+        public async Task<IActionResult> FilterByDate(DateTime date)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var filteredUsages = await _context.Usages
+                .Where(u => u.UserId == user.Id && u.Date.Date == date.Date)
+                .Include(u => u.Appliance)
+                .ThenInclude(a => a.Home)
+                .ToListAsync();
+
+            return PartialView("_UsageTableRows", filteredUsages);
+        }
 
 
         private bool UsageExists(int id)

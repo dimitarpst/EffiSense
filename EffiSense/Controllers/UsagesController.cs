@@ -73,17 +73,15 @@ namespace EffiSense.Controllers
         }
 
 
-        // POST: Usages/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UsageId,UserId,ApplianceId,Date,EnergyUsed,UsageFrequency,Duration")] Usage usage)
+        public async Task<IActionResult> Create([Bind("UsageId,UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency,Duration")] Usage usage)
         {
             ModelState.Remove("User");
             ModelState.Remove("Appliance");
             ModelState.Remove("UserId");
 
             var user = await _userManager.GetUserAsync(User);
-
             var appliance = await _context.Appliances
                 .Include(a => a.Home)
                 .FirstOrDefaultAsync(a => a.ApplianceId == usage.ApplianceId);
@@ -94,6 +92,7 @@ namespace EffiSense.Controllers
             }
 
             usage.UserId = user.Id;
+            usage.Date = usage.Date.Date.Add(usage.Time.TimeOfDay);
 
             if (ModelState.IsValid)
             {
@@ -106,8 +105,6 @@ namespace EffiSense.Controllers
             ViewData["ApplianceId"] = new SelectList(_context.Appliances.Where(a => a.Home.UserId == user.Id), "ApplianceId", "Name", usage.ApplianceId);
             return View(usage);
         }
-
-
 
         public async Task<IActionResult> Edit(int? id)
         {
@@ -140,29 +137,33 @@ namespace EffiSense.Controllers
 
 
 
-        // POST: Usages/Edit/5
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UsageId,UserId,ApplianceId,Date,EnergyUsed,UsageFrequency,Duration")] Usage usage)
+        public async Task<IActionResult> Edit(int id, [Bind("UsageId,UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency,Duration")] Usage usage)
         {
             ModelState.Remove("User");
             ModelState.Remove("Appliance");
             ModelState.Remove("UserId");
+
             if (id != usage.UsageId)
             {
                 return NotFound();
             }
 
             var appliance = await _context.Appliances
-              .Include(a => a.Home)
-              .FirstOrDefaultAsync(a => a.ApplianceId == usage.ApplianceId);
+                .Include(a => a.Home)
+                .FirstOrDefaultAsync(a => a.ApplianceId == usage.ApplianceId);
 
             var user = await _userManager.GetUserAsync(User);
             usage.UserId = user.Id;
-            if (usage.UserId != user.Id || appliance.Home.UserId != user.Id)
+
+            if (usage.UserId != user.Id || appliance?.Home.UserId != user.Id)
             {
-                return Forbid(); 
+                return Forbid();
             }
+
+            usage.Date = usage.Date.Date.Add(usage.Time.TimeOfDay); // Combine date and time.
 
             if (ModelState.IsValid)
             {
@@ -189,6 +190,7 @@ namespace EffiSense.Controllers
             ViewData["ApplianceId"] = new SelectList(_context.Appliances.Where(a => a.Home.UserId == user.Id), "ApplianceId", "Name", usage.ApplianceId);
             return View(usage);
         }
+
 
 
         // GET: Usages/Delete/5

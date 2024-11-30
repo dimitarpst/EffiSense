@@ -17,12 +17,15 @@
             </th>            
             <th>
                 @Html.DisplayNameFor(model => model.Brand)
-            </th>
+            </th>           
             <th>
                 @Html.DisplayNameFor(model => model.IsActive)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.PowerRating)
+            </th>           
+            <th>
+                @Html.DisplayNameFor(model => model.Home.HouseName)
             </th>
             <th></th>
         </tr>
@@ -35,12 +38,15 @@
             </td>           
             <td>
                 @Html.DisplayFor(modelItem => item.Brand)
-            </td>
+            </td>            
             <td>
                 @Html.DisplayFor(modelItem => item.IsActive)
             </td>
             <td>
-                    @Html.DisplayFor(modelItem => item.PowerRating)
+                @Html.DisplayFor(modelItem => item.PowerRating)
+            </td>            
+            <td>
+                @Html.DisplayFor(modelItem => item.Home.HouseName)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.ApplianceId">Edit</a> |

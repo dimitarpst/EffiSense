@@ -13,7 +13,7 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="HomeId" />
-            <div class="form-group">
+            <div class="form-group d-none">
                 <label for="UserId">UserId</label>
                 <input aps-for="UserId " type="text" class="form-control" value="@ViewData["UserId"]" readonly />
                 <span asp-validation-for="UserId" class="text-danger"></span>

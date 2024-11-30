@@ -33,7 +33,7 @@
             </div>
 
             <div class="form-group">
-                <label asp-for="ApplianceId" class="control-label"></label>
+                <label asp-for="ApplianceId" class="control-label">Appliance</label>
                 <select id="ApplianceId" asp-for="ApplianceId" class="form-control" data-selected-id="@ViewData["SelectedApplianceId"]">
                     <option value="">Select Appliance</option>
                 </select>
@@ -55,21 +55,21 @@
 
 
             <div class="form-group">
-                <label asp-for="EnergyUsed" class="control-label"></label>
+                <label asp-for="EnergyUsed" class="control-label">Energy Used (kWh)</label>
                 <input asp-for="EnergyUsed" class="form-control" type="number" step="0.01" />
                 <span asp-validation-for="EnergyUsed" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label asp-for="UsageFrequency" class="control-label"></label>
-                <input asp-for="UsageFrequency" class="form-control" type="number" />
+                <label asp-for="UsageFrequency" class="control-label">Usage Frequency</label>
+                <select asp-for="UsageFrequency" class="form-control">
+                    <option value="">Select Frequency</option>
+                    @foreach (var item in (Dictionary<int, string>)ViewData["UsageFrequencyOptions"])
+                    {
+                        <option value="@item.Key">@item.Value</option>
+                    }
+                </select>
                 <span asp-validation-for="UsageFrequency" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="Duration" class="control-label"></label>
-                <input asp-for="Duration" class="form-control" type="number" step="0.1" />
-                <span asp-validation-for="Duration" class="text-danger"></span>
             </div>
 
             <div class="form-group">

@@ -28,6 +28,7 @@ namespace EffiSense.Controllers
 
             var appliances = await _context.Appliances
                 .Where(a => a.Home.UserId == user.Id)
+                .Include(a => a.Home)
                 .ToListAsync();
 
             return View(appliances);
@@ -58,7 +59,7 @@ namespace EffiSense.Controllers
 
             var homes = _context.Homes.Where(h => h.UserId == user.Id).ToList();
 
-            ViewData["HomeId"] = new SelectList(homes, "HomeId", "HomeId");
+            ViewData["HomeId"] = new SelectList(homes, "HomeId", "HouseName");
             return View();
         }
 
@@ -111,7 +112,7 @@ namespace EffiSense.Controllers
                 return Forbid();
             }
 
-            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HomeId", appliance.HomeId);
+            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName", appliance.HomeId);
             return View(appliance);
         }
 
@@ -158,7 +159,7 @@ namespace EffiSense.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HomeId", appliance.HomeId);
+            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName", appliance.HomeId);
             return View(appliance);
         }
 

@@ -2,6 +2,14 @@
 
 @{
     ViewData["Title"] = "Details";
+    var usageFrequencyMap = new Dictionary<int, string>
+    {
+        { 1, "Rarely" },
+        { 2, "Sometimes" },
+        { 3, "Often" },
+        { 4, "Very Often" },
+        { 5, "Always" }
+    };
 }
 
 <h1>Details</h1>
@@ -11,46 +19,35 @@
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
-            Home ID
+            House Name
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Appliance.Home.HomeId) <!-- Display HomeId -->
+            @Html.DisplayFor(model => model.Appliance.Home.HouseName)
         </dd>
-
         <dt class="col-sm-2">
-            Appliance
+            Appliance Name
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Appliance.Name) <!-- Display Appliance Name -->
+            @Html.DisplayFor(model => model.Appliance.ApplianceId)
         </dd>
-
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Date)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Date)
         </dd>
-
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.EnergyUsed)
+            Energy Used(kWh)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.EnergyUsed)
+            @Html.DisplayFor(model => model.EnergyUsed) kWh
+        </dd>
+        <dt class="col-sm-2">
+            Usage Frequency
+        </dt>
+        <dd class="col-sm-10">@(usageFrequencyMap.ContainsKey(Model.UsageFrequency) ? usageFrequencyMap[Model.UsageFrequency] : "Unknown")</dd>
         </dd>
 
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.UsageFrequency)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.UsageFrequency)
-        </dd>
-
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Duration)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Duration)
-        </dd>
     </dl>
 </div>
 

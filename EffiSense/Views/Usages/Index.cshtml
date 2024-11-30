@@ -2,6 +2,14 @@
 
 @{
     ViewData["Title"] = "Index";
+    var usageFrequencyMap = new Dictionary<int, string>
+    {
+        { 1, "Rarely" },
+        { 2, "Sometimes" },
+        { 3, "Often" },
+        { 4, "Very Often" },
+        { 5, "Always" }
+    };
 }
 
 <h1>Index</h1>
@@ -18,22 +26,19 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Appliance.Home.HomeId)
+                House Name
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Appliance.Name)
+                Appliance Name
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Date)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.EnergyUsed)
+                @Html.DisplayNameFor(model => model.EnergyUsed) (kWh)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UsageFrequency)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Duration)
+                Usage Frequency
             </th>
             <th></th>
         </tr>
@@ -42,12 +47,11 @@
         @foreach (var item in Model)
         {
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.Appliance.Home.HomeId)</td>
+                <td>@Html.DisplayFor(modelItem => item.Appliance.Home.HouseName)</td>
                 <td>@Html.DisplayFor(modelItem => item.Appliance.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Date)</td>
-                <td>@Html.DisplayFor(modelItem => item.EnergyUsed)</td>
-                <td>@Html.DisplayFor(modelItem => item.UsageFrequency)</td>
-                <td>@Html.DisplayFor(modelItem => item.Duration)</td>
+                <td>@Html.DisplayFor(modelItem => item.EnergyUsed) kWh</td>
+                <td>@(usageFrequencyMap.ContainsKey(item.UsageFrequency) ? usageFrequencyMap[item.UsageFrequency] : "Unknown")</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.UsageId">Edit</a> |
                     <a asp-action="Details" asp-route-id="@item.UsageId">Details</a> |

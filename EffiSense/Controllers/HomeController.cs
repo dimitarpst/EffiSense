@@ -64,6 +64,77 @@ namespace EffiSense.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetDayOfWeekData()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var dayOfWeekData = _context.Usages
+                .Where(u => u.UserId == user.Id)
+                .GroupBy(u => u.Date.DayOfWeek)
+                .Select(g => new
+                {
+                    DayOfWeek = g.Key.ToString(),
+                    EnergyUsed = g.Sum(u => u.EnergyUsed)
+                })
+                .ToList();
+
+            var daysOfWeek = dayOfWeekData.Select(d => d.DayOfWeek).ToArray();
+            var energyUsed = dayOfWeekData.Select(d => d.EnergyUsed).ToArray();
+
+            return Json(new { daysOfWeek, energyUsed });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetMonthlyUsageData()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var monthlyUsageData = _context.Usages
+                .Where(u => u.UserId == user.Id)
+                .GroupBy(u => new { u.Date.Year, u.Date.Month })
+                .Select(g => new
+                {
+                    Month = $"{g.Key.Month}/{g.Key.Year}",
+                    EnergyUsed = g.Sum(u => u.EnergyUsed)
+                })
+                .OrderBy(d => d.Month)
+                .ToList();
+
+            var months = monthlyUsageData.Select(d => d.Month).ToArray();
+            var energyUsed = monthlyUsageData.Select(d => d.EnergyUsed).ToArray();
+
+            return Json(new { months, energyUsed });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetBuildingTypeData()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var buildingData = _context.Usages
+                .Include(u => u.Appliance)
+                .ThenInclude(a => a.Home)
+                .Where(u => u.UserId == user.Id)
+                .GroupBy(u => u.Appliance.Home.BuildingType)
+                .Select(g => new
+                {
+                    BuildingType = g.Key,
+                    EnergyUsed = g.Sum(u => u.EnergyUsed)
+                })
+                .ToList();
+
+            var buildingTypes = buildingData.Select(d => d.BuildingType).ToArray();
+            var energyUsed = buildingData.Select(d => d.EnergyUsed).ToArray();
+
+            return Json(new { buildingTypes, energyUsed });
+        }
+
+
+        [HttpGet]
         public async Task<IActionResult> GetApplianceData()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -87,8 +158,52 @@ namespace EffiSense.Controllers
             return Json(new { applianceNames, energyUsed });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetHomeData()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
 
+            var homeData = _context.Usages
+                .Include(u => u.Appliance)
+                .ThenInclude(a => a.Home)
+                .Where(u => u.UserId == user.Id)
+                .GroupBy(u => u.Appliance.Home.HouseName)
+                .Select(g => new
+                {
+                    HomeName = g.Key,
+                    EnergyUsed = g.Sum(u => u.EnergyUsed)
+                })
+                .ToList();
 
+            var homeNames = homeData.Select(d => d.HomeName).ToArray();
+            var energyUsed = homeData.Select(d => d.EnergyUsed).ToArray();
+
+            return Json(new { homeNames, energyUsed });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPeakTimeData()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var peakTimeData = _context.Usages
+                .Where(u => u.UserId == user.Id)
+                .GroupBy(u => u.Time.Hour)
+                .Select(g => new
+                {
+                    Hour = g.Key,
+                    EnergyUsed = g.Sum(u => u.EnergyUsed)
+                })
+                .OrderBy(g => g.Hour)
+                .ToList();
+
+            var hours = peakTimeData.Select(d => $"{d.Hour}:00").ToArray();
+            var energyUsed = peakTimeData.Select(d => d.EnergyUsed).ToArray();
+
+            return Json(new { hours, energyUsed });
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetUsageData()

@@ -1,4 +1,14 @@
 ﻿@model IEnumerable<Usage>
+@{
+    var usageFrequencyMap = new Dictionary<int, string>
+    {
+        { 1, "Rarely" },
+        { 2, "Sometimes" },
+        { 3, "Often" },
+        { 4, "Very Often" },
+        { 5, "Always" }
+    };
+}
 
 @foreach (var item in Model)
 {
@@ -7,7 +17,7 @@
         <td>@Html.DisplayFor(modelItem => item.Appliance.Name)</td>
         <td>@Html.DisplayFor(modelItem => item.Date)</td>
         <td>@Html.DisplayFor(modelItem => item.EnergyUsed)</td>
-        <td>@Html.DisplayFor(modelItem => item.UsageFrequency)</td>
+        <td>@(usageFrequencyMap.ContainsKey(item.UsageFrequency) ? usageFrequencyMap[item.UsageFrequency] : "Unknown")</td>
         <td>
             <a asp-action="Edit" asp-route-id="@item.UsageId">Edit</a> |
             <a asp-action="Details" asp-route-id="@item.UsageId">Details</a> |

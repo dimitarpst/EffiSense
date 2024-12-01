@@ -5,12 +5,12 @@
         if (selectedDate) {
             localStorage.setItem("selectedDate", selectedDate);
         } else {
-            localStorage.removeItem("selectedDate"); // Clear stored date if input is cleared
+            localStorage.removeItem("selectedDate");
         }
 
         $.ajax({
             url: '/Usages/FilterByDate',
-            data: { date: selectedDate || null }, // Send null if no date is selected
+            data: { date: selectedDate },
             success: function (data) {
                 $("#usageTableBody").html(data);
             },
@@ -18,9 +18,9 @@
                 alert("Error fetching data.");
             }
         });
+
     });
 
-    // Populate the date filter with the stored date on page load
     const storedDate = localStorage.getItem("selectedDate");
     if (storedDate) {
         $("#filterDate").val(storedDate);

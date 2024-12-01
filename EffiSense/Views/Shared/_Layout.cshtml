@@ -5,67 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EffiSense</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/createEdit.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/EffiSense.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/index.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">EffiSense</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
+    <div class="d-flex" id="wrapper">
+        <nav id="sidebar" class="bg-light ">
+            <div class="d-flex justify-content-start sidebar-header text-start pt-2 pb-4 ps-2">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="material-icons md-36">bolt</span>
+                    <span class="brand-text">EffiSense</span>
+                </a>
 
-                    
-                </div>
             </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                        <span class="material-icons">dashboard</span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="Homes" asp-action="Index">
+                        <span class="material-icons">home</span>
+                        <span class="nav-text">My Homes</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="Appliances" asp-action="Index">
+                        <span class="material-icons">devices</span>
+                        <span class="nav-text">My Appliances</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="Usages" asp-action="Index">
+                        <span class="material-icons">bar_chart</span>
+                        <span class="nav-text">My Usages</span>
+                    </a>
+                </li>
+            </ul>
         </nav>
-    </header>
 
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-                <div class="position-sticky">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link active" asp-area="" asp-controller="Home" asp-action="Index">
-                                Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Homes" asp-action="Index">
-                                My Homes
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Appliances" asp-action="Index">
-                                My Appliances
-                            </a>
-                        </li>                        
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Usages" asp-action="Index">
-                                My Usages
-                            </a>
-                        </li>
-                    </ul>
-                    <partial name="_LoginPartial" />
+        <div id="content-wrapper" class="flex-grow-1 d-flex flex-column">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+                <div class="container-fluid">
+                    <button class="btn btn btn-primary order-lg-1 order-2" id="sidebarToggle">
+                        <span class="material-icons" style="line-height:1.5;">menu</span>
+                    </button>
+                    <div class="ms-lg-auto me-auto me-lg-0 order-lg-2 order-1">
+                        <partial name="_LoginPartial" />
+                    </div>
                 </div>
             </nav>
 
-            <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-4">
-                <h1 class="h2">@ViewData["Title"]</h1>
-                @RenderBody()
+            <main class="flex-grow-1">
+                <div class="container-fluid">
+                    @RenderBody()
+                </div>
             </main>
+
+            <footer class="bg-light text-muted py-3">
+                <div class="container text-center">
+                    &copy; 2024 - EffiSense
+                </div>
+            </footer>
         </div>
     </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2024 - EffiSense
-        </div>
-    </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,5 +1,4 @@
 ﻿$(document).ready(function () {
-    // Date Filtering on Index
     $("#filterDate").change(function () {
         const selectedDate = $(this).val();
         if (selectedDate) {
@@ -8,17 +7,18 @@
             localStorage.removeItem("selectedDate");
         }
 
-        $.ajax({
-            url: '/Usages/FilterByDate',
-            data: { date: selectedDate },
-            success: function (data) {
-                $("#usageTableBody").html(data);
-            },
-            error: function () {
-                alert("Error fetching data.");
-            }
+        $("#usageCardContainer").fadeOut(200, function () {
+            $.ajax({
+                url: '/Usages/FilterByDate',
+                data: { date: selectedDate },
+                success: function (data) {
+                    $("#usageCardContainer").html(data).fadeIn(300);
+                },
+                error: function () {
+                    alert("Error fetching data.");
+                }
+            });
         });
-
     });
 
     const storedDate = localStorage.getItem("selectedDate");

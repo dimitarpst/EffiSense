@@ -1,4 +1,5 @@
 using EffiSense.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using System.Diagnostics;
 
 namespace EffiSense.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -34,6 +36,59 @@ namespace EffiSense.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCategoryData()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var categoryData = _context.Usages
+                .Include(u => u.Appliance)
+                .Where(u => u.UserId == user.Id)
+                .GroupBy(u => u.Appliance.Name)
+                .Select(g => new
+                {
+                    Appliance = g.Key,
+                    EnergyUsed = g.Sum(u => u.EnergyUsed)
+                })
+                .ToList();
+
+            var labels = categoryData.Select(d => d.Appliance).ToArray();
+            var energyUsed = categoryData.Select(d => d.EnergyUsed).ToArray();
+
+            return Json(new { labels, energyUsed });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetApplianceData()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var userId = user.Id;
+
+            var applianceData = _context.Usages
+                .Where(u => u.UserId == userId)
+                .GroupBy(u => u.Appliance.Name)
+                .Select(g => new
+                {
+                    ApplianceName = g.Key,
+                    EnergyUsed = g.Sum(u => u.EnergyUsed)
+                })
+                .ToList();
+
+            var applianceNames = applianceData.Select(d => d.ApplianceName).ToArray();
+            var energyUsed = applianceData.Select(d => d.EnergyUsed).ToArray();
+
+            return Json(new { applianceNames, energyUsed });
+        }
+
+
+
 
         [HttpGet]
         public async Task<IActionResult> GetUsageData()

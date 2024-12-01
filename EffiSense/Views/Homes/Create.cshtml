@@ -1,69 +1,89 @@
 ﻿@model Home
 
-@{
-    ViewData["Title"] = "Create";
-}
+<div class="form-container">
+    <h1 class="text-center">@ViewData["Title"]</h1>
+    <h4 class="text-center mb-4">Home</h4>
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-<h1>Create</h1>
+        <div class="form-group d-none">
+            <label for="UserId" class="form-label">User ID</label>
+            <input asp-for="UserId" type="text" class="form-control" value="@ViewData["UserId"]" readonly />
+        </div>
 
-<h4>Home</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group d-none">
-                <label for="UserId">UserId</label>
-                <input aps-for="UserId " type="text" class="form-control" value="@ViewData["UserId"]" readonly />
-                <span asp-validation-for="UserId" class="text-danger"></span>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="houseNameLabel">🏠</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="HouseName" class="form-control" placeholder="House Name" aria-describedby="houseNameLabel" />
+                <label asp-for="HouseName">House Name</label>
             </div>
+        </div>
+        <span asp-validation-for="HouseName" class="text-danger "></span>
 
-            <div class="form-group">
-                <label asp-for="HouseName" class="control-label">House Name</label>
-                <input asp-for="HouseName" class="form-control" />
-                <span asp-validation-for="HouseName" class="text-danger"></span>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="sizeLabel">📏</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="Size" class="form-control" placeholder="Size (sq. m)" aria-describedby="sizeLabel" />
+                <label asp-for="Size">Size (sq. m)</label>
             </div>
-            <div class="form-group">
-                <label asp-for="Size" class="control-label">Size (sq. m)</label>
-                <input asp-for="Size" class="form-control" />
-                <span asp-validation-for="Size" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="HeatingType" class="control-label">Heating Type</label>
-                <input asp-for="HeatingType" class="form-control" />
-                <span asp-validation-for="HeatingType" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Location" class="control-label"></label>
-                <input asp-for="Location" class="form-control" />
-                <span asp-validation-for="Location" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Address" class="control-label"></label>
-                <input asp-for="Address" class="form-control" />
-                <span asp-validation-for="Address" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="BuildingType" class="control-label">Building Type</label>
-                <input asp-for="BuildingType" class="form-control" />
-                <span asp-validation-for="BuildingType" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="InsulationLevel" class="control-label">Insulation Level</label>
-                <input asp-for="InsulationLevel" class="form-control" />
-                <span asp-validation-for="InsulationLevel" class="text-danger"></span>
-            </div>
+        </div>
+        <span asp-validation-for="Size" class="text-danger "></span>
 
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="heatingTypeLabel">🔥</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="HeatingType" class="form-control" placeholder="Heating Type" aria-describedby="heatingTypeLabel" />
+                <label asp-for="HeatingType">Heating Type</label>
             </div>
-        </form>
+        </div>
+        <span asp-validation-for="HeatingType" class="text-danger "></span>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="locationLabel">📍</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="Location" class="form-control" placeholder="Location" aria-describedby="locationLabel" />
+                <label asp-for="Location">Location</label>
+            </div>
+        </div>
+        <span asp-validation-for="Location" class="text-danger "></span>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="addressLabel">📫</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="Address" class="form-control" placeholder="Address" aria-describedby="addressLabel" />
+                <label asp-for="Address">Address</label>
+            </div>
+        </div>
+        <span asp-validation-for="Address" class="text-danger "></span>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="buildingTypeLabel">🏢</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="BuildingType" class="form-control" placeholder="Building Type" aria-describedby="buildingTypeLabel" />
+                <label asp-for="BuildingType">Building Type</label>
+            </div>
+        </div>
+        <span asp-validation-for="BuildingType" class="text-danger "></span>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="insulationLevelLabel">🛡️</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="InsulationLevel" class="form-control" placeholder="Insulation Level" aria-describedby="insulationLevelLabel" />
+                <label asp-for="InsulationLevel">Insulation Level</label>
+            </div>
+        </div>
+        <span asp-validation-for="InsulationLevel" class="text-danger "></span>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+    </form>
+
+    <div class="text-center mt-4">
+        <a asp-action="Index" class="back-link">Back to List</a>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

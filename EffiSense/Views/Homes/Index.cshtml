@@ -1,74 +1,41 @@
 ﻿@model IEnumerable<Home>
 
-@{
-    ViewData["Title"] = "Index";
-}
+<div class="container">
+    <h1 class="text-center">@ViewData["Title"]</h1>
 
-<h1>Index</h1>
+    <p class="text-center my-4">
+        <a asp-action="Create" class="btn btn-lg btn-primary shadow-sm">+ Create New</a>
+    </p>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                House Name
-            </th>            
-            <th>
-                @Html.DisplayNameFor(model => model.Size) (sq. m)
-            </th>
-            <th>
-                Heating Type
-            </th>            
-            <th>
-                @Html.DisplayNameFor(model => model.Location)
-            </th>                 
-            <th>
-                @Html.DisplayNameFor(model => model.Address)
-            </th>            
-            <th>
-                Building Type
-            </th>            
-            <th>
-                Insulation Level
-            </th>
-
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.HouseName)
-            </td>            
-            <td>
-                @Html.DisplayFor(modelItem => item.Size)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.HeatingType)
-            </td>            
-            <td>
-                @Html.DisplayFor(modelItem => item.Location)
-            </td>              
-            <td>
-                @Html.DisplayFor(modelItem => item.Address)
-            </td>            
-            <td>
-                @Html.DisplayFor(modelItem => item.BuildingType)
-            </td>           
-            <td>
-                @Html.DisplayFor(modelItem => item.InsulationLevel)
-            </td>
-
-
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.HomeId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.HomeId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.HomeId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4">
+                <div class="card border-0 shadow">
+                    <div class="card-body">
+                        <h3 class="card-title text-dark">@item.HouseName</h3>
+                        <ul class="list-unstyled mt-3 mb-4">
+                            <li><strong>Size:</strong> @item.Size sq. m</li>
+                            <li><strong>Heating Type:</strong> @item.HeatingType</li>
+                            <li><strong>Location:</strong> @item.Location</li>
+                            <li><strong>Address:</strong> @item.Address</li>
+                            <li><strong>Building Type:</strong> @item.BuildingType</li>
+                            <li><strong>Insulation Level:</strong> @item.InsulationLevel</li>
+                        </ul>
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <a asp-action="Edit" asp-route-id="@item.HomeId" class="btn btn-warning btn-lg w-100">Edit</a>
+                            </div>
+                            <div class="col-4">
+                                <a asp-action="Details" asp-route-id="@item.HomeId" class="btn btn-info btn-lg w-100">Details</a>
+                            </div>
+                            <div class="col-4">
+                                <a asp-action="Delete" asp-route-id="@item.HomeId" class="btn btn-danger btn-lg w-100">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

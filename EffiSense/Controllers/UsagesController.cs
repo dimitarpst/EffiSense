@@ -97,6 +97,7 @@ namespace EffiSense.Controllers
 
         public async Task<IActionResult> Index()
         {
+            ViewData["Title"] = "Usages";
             var user = await _userManager.GetUserAsync(User);
 
             var applicationDbContext = _context.Usages
@@ -381,12 +382,20 @@ namespace EffiSense.Controllers
                 else
                 {
                     Console.WriteLine($"Invalid date format: {date}");
+                    return BadRequest("Invalid date format.");
                 }
             }
 
+
             var filteredUsages = await usagesQuery.ToListAsync();
-            return PartialView("_UsageTableRows", filteredUsages);
+            if (filteredUsages == null || !filteredUsages.Any())
+            {
+                return PartialView("~/Views/Shared/_UpdateTableRows.cshtml", filteredUsages);
+            }
+            return PartialView("~/Views/Shared/_UpdateTableRows.cshtml", filteredUsages);
+
         }
+
 
 
 

@@ -1,42 +1,34 @@
 ﻿@model Appliance
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Details Appliance";
 }
 
-<h1>Details</h1>
+<div class="container py-5">
+    <h1 class="text-center mb-4">@ViewData["Title"]</h1>
 
-<div>
-    <h4>Appliance</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class="col-sm-2">
-            House Name
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Home.HouseName)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Brand)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Brand)
-        </dd>
-        <dt class="col-sm-2">
-            Power Rating
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.PowerRating)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.ApplianceId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <div class="card shadow-lg border-0">
+        <div class="card-body">
+            <h3 class="card-title text-dark">Appliance Details</h3>
+            <hr />
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <strong>Name:</strong> @Html.DisplayFor(model => model.Name)
+                </li>
+                <li class="list-group-item">
+                    <strong>House Name:</strong> @Html.DisplayFor(model => model.Home.HouseName)
+                </li>
+                <li class="list-group-item">
+                    <strong>Brand:</strong> @Html.DisplayFor(model => model.Brand)
+                </li>
+                <li class="list-group-item">
+                    <strong>Power Rating:</strong> @Html.DisplayFor(model => model.PowerRating)
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer text-center">
+            <a asp-action="Edit" asp-route-id="@Model?.ApplianceId" class="btn btn-warning btn-lg">Edit</a>
+            <a asp-action="Index" class="btn btn-secondary btn-lg ms-2">Back to List</a>
+        </div>
+    </div>
 </div>

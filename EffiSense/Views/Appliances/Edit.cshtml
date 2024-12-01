@@ -1,49 +1,60 @@
 ﻿@model Appliance
 
-@{
-    ViewData["Title"] = "Edit";
-}
+<div class="form-container">
+    <h1 class="text-center">@ViewData["Title"]</h1>
+    <h4 class="text-center mb-4">Appliance</h4>
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-<h1>Edit</h1>
+        <input type="hidden" asp-for="ApplianceId" />
 
-<h4>Appliance</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="ApplianceId" />
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="nameLabel">📛</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="Name" class="form-control" placeholder="Name" aria-describedby="nameLabel" />
+                <label asp-for="Name">Name</label>
+            </div>
+        </div>
+        <span asp-validation-for="Name" class="text-danger"></span>
 
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="homeLabel">🏠</span>
+            <div class="form-floating flex-grow-1">
+                <select asp-for="HomeId" class="form-control" asp-items="ViewBag.HomeId" aria-describedby="homeLabel">
+                </select>
+                <label asp-for="HomeId">Home</label>
             </div>
-            <div class="form-group">
-                <label asp-for="Home.HouseName" class="control-label"></label>
-                <select asp-for="HomeId" class="form-control" asp-items="ViewBag.HomeId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Brand" class="control-label"></label>
-                <input asp-for="Brand" class="form-control" />
-                <span asp-validation-for="Brand" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PowerRating" class="control-label">Power Rating</label>
-                <input asp-for="PowerRating" class="form-control" />
-                <span asp-validation-for="PowerRating" class="text-danger"></span>
-            </div>
+        </div>
+        <span asp-validation-for="HomeId" class="text-danger"></span>
 
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="brandLabel">🏷️</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="Brand" class="form-control" placeholder="Brand" aria-describedby="brandLabel" />
+                <label asp-for="Brand">Brand</label>
             </div>
-        </form>
+        </div>
+        <span asp-validation-for="Brand" class="text-danger"></span>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="powerRatingLabel">⚡</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="PowerRating" class="form-control" placeholder="Power Rating" aria-describedby="powerRatingLabel" />
+                <label asp-for="PowerRating">Power Rating</label>
+            </div>
+        </div>
+        <span asp-validation-for="PowerRating" class="text-danger"></span>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+    </form>
+
+    <div class="text-center mt-4">
+        <a asp-action="Index" class="back-link">Back to List</a>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

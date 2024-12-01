@@ -1,0 +1,39 @@
+﻿@model IEnumerable<Usage>
+@{
+    var usageFrequencyMap = new Dictionary<int, string>
+    {
+        { 1, "Rarely" },
+        { 2, "Sometimes" },
+        { 3, "Often" },
+        { 4, "Very Often" },
+        { 5, "Always" }
+    };
+}
+
+@foreach (var item in Model)
+{
+    <div class="col-md-4">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <h3 class="card-title text-dark">@item.Appliance.Name</h3>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li><strong>House Name:</strong> @item.Appliance.Home.HouseName</li>
+                    <li><strong>Date:</strong> @item.Date.ToShortDateString()</li>
+                    <li><strong>Energy Used:</strong> @item.EnergyUsed kWh</li>
+                    <li><strong>Frequency:</strong> @(usageFrequencyMap.ContainsKey(item.UsageFrequency) ? usageFrequencyMap[item.UsageFrequency] : "Unknown")</li>
+                </ul>
+                <div class="row g-2">
+                    <div class="col-4">
+                        <a asp-action="Edit" asp-route-id="@item.UsageId" class="btn btn-warning btn-lg w-100">Edit</a>
+                    </div>
+                    <div class="col-4">
+                        <a asp-action="Details" asp-route-id="@item.UsageId" class="btn btn-info btn-lg w-100">Details</a>
+                    </div>
+                    <div class="col-4">
+                        <a asp-action="Delete" asp-route-id="@item.UsageId" class="btn btn-danger btn-lg w-100">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

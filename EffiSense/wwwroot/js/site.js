@@ -1,4 +1,11 @@
 ﻿$(document).ready(function () {
+    const detailsButton = document.querySelector('#detailsButton');
+    if (detailsButton) {
+        detailsButton.classList.add('singular');
+    } else {
+        console.warn('detailsButton not found in the DOM.');
+    }
+
     $('#sidebarToggle').on('click', function () {
         $('#sidebar').toggleClass('collapsed');
         $('#content-wrapper').toggleClass('collapsed');
@@ -22,3 +29,4 @@
         }
     });
 });
+

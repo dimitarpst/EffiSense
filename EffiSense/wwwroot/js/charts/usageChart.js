@@ -1,10 +1,10 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
-    const ctx = document.getElementById("usageChart").getContext("2d");
-
-    fetch('/Home/GetUsageData') 
+    // Energy Usage by Day (Bar Chart)
+    const usageCtx = document.getElementById("usageChart").getContext("2d");
+    fetch('/Home/GetUsageData')
         .then(response => response.json())
         .then(data => {
-            new Chart(ctx, {
+            new Chart(usageCtx, {
                 type: 'bar',
                 data: {
                     labels: data.labels,
@@ -25,6 +25,29 @@
                     }
                 }
             });
-        })
-        .catch(error => console.error('Error fetching chart data:', error));
+        });
+
+    // Energy Usage by Appliance (Doughnut Chart)
+    const applianceCtx = document.getElementById("applianceChart").getContext("2d");
+    fetch('/Home/GetApplianceData')
+        .then(response => response.json())
+        .then(data => {
+            new Chart(applianceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.applianceNames,
+                    datasets: [{
+                        label: 'Energy Usage (kWh)',
+                        data: data.energyUsed,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        });
+
+   
 });

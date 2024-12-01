@@ -1,7 +1,41 @@
-﻿<div>
-    <h2>Energy Usage Chart</h2>
-    <canvas id="usageChart" width="400" height="100"></canvas>
+﻿<div class="container my-4">
+    <h1 class="text-center mb-4">Dashboard</h1>
+    <div class="row g-4">
+        <!-- Energy Usage Chart -->
+        <div class="col-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="card-title text-center">Energy Usage by Day</h4>
+                    <canvas id="usageChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Energy Usage by Appliance -->
+        <div class="col-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="card-title text-center">Energy Usage by Appliance</h4>
+                    <canvas id="applianceChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Energy Usage by Heating Type -->
+        <div class="col-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="card-title text-center">Energy Usage by Heating Type</h4>
+                    <canvas id="heatingChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
 </div>
+>
+
 <div>
     <h2>Energy Efficiency Suggestions</h2>
     <div>

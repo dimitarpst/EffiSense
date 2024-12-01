@@ -147,13 +147,19 @@ namespace EffiSense.Controllers
                     { 5, "Always" }
                 };
 
+            var usage = new Usage
+            {
+                Date = DateTime.Now.Date,
+                Time = DateTime.Now
+            };
+
             return View();
         }
 
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UsageId,UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency")] Usage usage)
+        public async Task<IActionResult> Create([Bind("UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency")] Usage usage)
         {
             ModelState.Remove("User");
             ModelState.Remove("Appliance");
@@ -180,7 +186,17 @@ namespace EffiSense.Controllers
             }
 
             ViewData["UserId"] = usage.UserId;
+            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName");
+
             ViewData["ApplianceId"] = new SelectList(_context.Appliances.Where(a => a.Home.UserId == user.Id), "ApplianceId", "Name", usage.ApplianceId);
+            ViewData["UsageFrequencyOptions"] = new Dictionary<int, string>
+                {
+                    { 1, "Rarely" },
+                    { 2, "Sometimes" },
+                    { 3, "Often" },
+                    { 4, "Very Often" },
+                    { 5, "Always" }
+                };
             return View(usage);
         }
 
@@ -223,7 +239,7 @@ namespace EffiSense.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UsageId,UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency")] Usage usage)
+        public async Task<IActionResult> Edit(int id, [Bind("UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency")] Usage usage)
         {
             ModelState.Remove("User");
             ModelState.Remove("Appliance");
@@ -271,6 +287,16 @@ namespace EffiSense.Controllers
 
             ViewData["UserId"] = usage.UserId;
             ViewData["ApplianceId"] = new SelectList(_context.Appliances.Where(a => a.Home.UserId == user.Id), "ApplianceId", "Name", usage.ApplianceId);
+            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName", usage.Appliance.HomeId);
+            ViewData["SelectedApplianceId"] = usage.ApplianceId;
+            ViewData["UsageFrequencyOptions"] = new Dictionary<int, string>
+                {
+                    { 1, "Rarely" },
+                    { 2, "Sometimes" },
+                    { 3, "Often" },
+                    { 4, "Very Often" },
+                    { 5, "Always" }
+                };
             return View(usage);
         }
 
@@ -336,7 +362,7 @@ namespace EffiSense.Controllers
             return Json(appliances);
         }
         [HttpGet]
-        public async Task<IActionResult> FilterByDate(DateTime? date)
+        public async Task<IActionResult> FilterByDate(string date)
         {
             var user = await _userManager.GetUserAsync(User);
 
@@ -345,14 +371,23 @@ namespace EffiSense.Controllers
                 .ThenInclude(a => a.Home)
                 .Where(u => u.UserId == user.Id);
 
-            if (date.HasValue)
+            if (!string.IsNullOrEmpty(date))
             {
-                usagesQuery = usagesQuery.Where(u => u.Date.Date == date.Value.Date);
+                if (DateTime.TryParse(date, out DateTime parsedDate))
+                {
+                    usagesQuery = usagesQuery.Where(u => u.Date.Date == parsedDate.Date);
+                    Console.WriteLine($"Filtering by date: {parsedDate.ToShortDateString()}");
+                }
+                else
+                {
+                    Console.WriteLine($"Invalid date format: {date}");
+                }
             }
 
             var filteredUsages = await usagesQuery.ToListAsync();
             return PartialView("_UsageTableRows", filteredUsages);
         }
+
 
 
 

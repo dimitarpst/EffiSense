@@ -1,4 +1,5 @@
-﻿public class Usage
+﻿
+public class Usage
 {
     public int UsageId { get; set; }
     public string UserId { get; set; }

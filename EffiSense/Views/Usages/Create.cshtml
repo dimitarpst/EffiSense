@@ -1,22 +1,15 @@
 ﻿@model Usage
 
-@{
-    ViewData["Title"] = "Create Usage";
-}
+<div class="form-container">
+    <h1 class="text-center">@ViewData["Title"]</h1>
+    <h4 class="text-center mb-4">Usage</h4>
+    <form id="usageForm" asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-<h1>@ViewData["Title"]</h1>
-
-<h4>Usage</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form id="usageForm" asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="UsageId" />
-
-            <div class="form-group">
-                <label for="HomeId">Home</label>
-                <select id="HomeId" class="form-control" name="HomeId">
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="homeLabel">🏠</span>
+            <div class="form-floating flex-grow-1">
+                <select id="HomeId" class="form-control" name="HomeId" aria-describedby="homeLabel">
                     <option value="">Select Home</option>
                     @foreach (var item in (SelectList)ViewData["HomeId"])
                     {
@@ -30,64 +23,76 @@
                         }
                     }
                 </select>
+                <label for="HomeId">Home</label>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label asp-for="ApplianceId" class="control-label">Appliance</label>
-                <select id="ApplianceId" asp-for="ApplianceId" class="form-control" data-selected-id="@ViewData["SelectedApplianceId"]">
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="applianceLabel">🔌</span>
+            <div class="form-floating flex-grow-1">
+                <select id="ApplianceId" asp-for="ApplianceId" class="form-control" data-selected-id="@ViewData["SelectedApplianceId"]" aria-describedby="applianceLabel">
                     <option value="">Select Appliance</option>
                 </select>
-                <span asp-validation-for="ApplianceId" class="text-danger"></span>
+                <label asp-for="ApplianceId">Appliance</label>
             </div>
+        </div>
+        <span asp-validation-for="ApplianceId" class="text-danger"></span>
 
-
-
-            <div class="form-group">
-                <label asp-for="Date" class="control-label">Date</label>
-                <input asp-for="Date" class="form-control" type="date" />
-                <span asp-validation-for="Date" class="text-danger"></span>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="dateLabel">📅</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="Date" class="form-control" type="date" aria-describedby="dateLabel" />
+                <label asp-for="Date">Date</label>
             </div>
-            <div class="form-group">
-                <label asp-for="Time" class="control-label">Time</label>
-                <input asp-for="Time" class="form-control" type="time" />
-                <span asp-validation-for="Time" class="text-danger"></span>
+        </div>
+        <span asp-validation-for="Date" class="text-danger"></span>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="timeLabel">⏰</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="Time" class="form-control" type="time" aria-describedby="timeLabel" />
+                <label asp-for="Time">Time</label>
             </div>
+        </div>
+        <span asp-validation-for="Time" class="text-danger"></span>
 
-
-            <div class="form-group">
-                <label asp-for="EnergyUsed" class="control-label">Energy Used (kWh)</label>
-                <input asp-for="EnergyUsed" class="form-control" type="number" step="0.01" />
-                <span asp-validation-for="EnergyUsed" class="text-danger"></span>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="energyLabel">⚡</span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="EnergyUsed" class="form-control" type="number" step="0.01" placeholder="Energy Used (kWh)" aria-describedby="energyLabel" />
+                <label asp-for="EnergyUsed">Energy Used (kWh)</label>
             </div>
+        </div>
+        <span asp-validation-for="EnergyUsed" class="text-danger"></span>
 
-            <div class="form-group">
-                <label asp-for="UsageFrequency" class="control-label">Usage Frequency</label>
-                <select asp-for="UsageFrequency" class="form-control">
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="frequencyLabel">🔄</span>
+            <div class="form-floating flex-grow-1">
+                <select asp-for="UsageFrequency" class="form-control" aria-describedby="frequencyLabel">
                     <option value="">Select Frequency</option>
                     @foreach (var item in (Dictionary<int, string>)ViewData["UsageFrequencyOptions"])
                     {
                         <option value="@item.Key">@item.Value</option>
                     }
                 </select>
-                <span asp-validation-for="UsageFrequency" class="text-danger"></span>
+                <label asp-for="UsageFrequency">Usage Frequency</label>
             </div>
+        </div>
+        <span asp-validation-for="UsageFrequency" class="text-danger"></span>
 
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+    </form>
+
+    <div class="text-center mt-4">
+        <a asp-action="Index" class="back-link">Back to List</a>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-
     <script src="~/js/usageCreate.js"></script>
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
 }

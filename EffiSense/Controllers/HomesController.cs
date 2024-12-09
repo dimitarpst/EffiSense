@@ -26,6 +26,8 @@ namespace EffiSense.Controllers
 
         public async Task<IActionResult> Index()
         {
+            ViewData["Title"] = "Homes";
+
             var user = await _userManager.GetUserAsync(User);
 
             var homes = await _context.Homes

@@ -88,7 +88,7 @@ namespace EffiSense.Controllers
                 applianceDetails+=($"{appliance.Appliance.Name} with a {appliance.Appliance.PowerRating} rating, ");
             }
             applianceDetails+=($"... with my highest consumption coming from {topUsage.Appliance.Name} which consumes {topUsage.EnergyUsed} kWh daily");
-            string aiPrompt = $"{homeDetails}.{applianceDetails}. Provide a suggestion to help with this problem: {userPrompt}.";
+            string aiPrompt = $"{homeDetails}.{applianceDetails}. Provide a suggestion to help with this problem, give a direct answer to this question: {userPrompt}.";
 
             var suggestion = await GetEnergyEfficiencyTips(aiPrompt);
 
@@ -240,7 +240,7 @@ namespace EffiSense.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency")] Usage usage)
+        public async Task<IActionResult> Edit(int id, [Bind("UsageId, UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency")] Usage usage)
         {
             ModelState.Remove("User");
             ModelState.Remove("Appliance");

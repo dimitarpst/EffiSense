@@ -6,7 +6,7 @@
 
 #sidebar {
     width: 200px;
-    min-width: 80px;
+    min-width: 55px;
     max-width: 250px;
     transition: all 0.3s ease;
     overflow-x: hidden;
@@ -17,23 +17,12 @@
 }
 
     #sidebar.collapsed {
-        width: 80px;
+        width: 55px;
     }
 
-    #sidebar .sidebar-header {
-        background: #f8f9fa;
-        text-align: center;
-    }
-
-    #sidebar .navbar-brand {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-        #sidebar .navbar-brand .material-icons {
-            font-size: 36px;
-            margin-right: 8px;
+        #sidebar .sidebar-header,
+        #sidebar.collapsed .navbar-brand .brand-text {
+            display: none;
         }
 
     #sidebar .nav-link {
@@ -41,28 +30,13 @@
         align-items: center;
         padding: 0.75rem 1rem;
         color: #333;
+        transition: background-color 0.3s ease;
     }
 
-        #sidebar .nav-link .material-icons {
-            font-size: 24px;
-            margin-right: 16px;
+        #sidebar .nav-link:hover,
+        #sidebar .nav-link.active {
+            background-color: #e9ecef;
         }
-
-    #sidebar.collapsed .nav-link .nav-text {
-        display: none;
-    }
-
-    #sidebar.collapsed .navbar-brand .brand-text {
-        display: none;
-    }
-
-    #sidebar .nav-link:hover {
-        background-color: #e9ecef;
-    }
-
-    #sidebar .nav-link.active {
-        background-color: #e9ecef;
-    }
 
 #content-wrapper {
     margin-left: 200px;
@@ -71,33 +45,30 @@
 }
 
 #sidebar.collapsed ~ #content-wrapper {
-    margin-left: 80px;
+    margin-left: 55px;
     width: calc(100% - 80px);
 }
 
 body {
     overflow-x: hidden;
-    
 }
 
-.navbar {
+.navbar,
+footer {
     background-color: #fff;
-    border-bottom: 1px solid #dee2e6;
 }
 
 footer {
-    background-color: #fff;
     border-top: 1px solid #dee2e6;
 }
 
-.navbar .material-icons {
+.navbar .material-icons,
+#sidebar .nav-link .material-icons {
     font-size: 24px;
+    margin-right: 8px;
 }
 
-.navbar .btn {
-    margin-right: 10px;
-}
-
+.navbar .btn,
 .btn-primary {
     border-radius: 1.25rem;
 }
@@ -110,26 +81,6 @@ footer {
     font-size: 1.25rem;
     font-weight: bold;
 }
-
-
-
-.navbar-brand .material-icons {
-    font-size: 36px;
-    margin-right: 5px;
-}
-
-.nav-link {
-    font-size: 1rem;
-}
-
-    .nav-link:hover {
-        background-color: #dfe2e6;
-    }
-
-    .nav-link.active {
-        background-color: #dfe2e6;
-        font-weight: bold;
-    }
 
 #mobileSidebarToggle {
     display: none;
@@ -158,7 +109,6 @@ footer {
         overflow: hidden;
     }
 }
-
 
 h3 {
     margin-top: 30px;

@@ -1,55 +1,38 @@
 ﻿@model IEnumerable<Appliance>
 
-@{
-    ViewData["Title"] = "Index";
-}
+<div class="container">
+    <h1 class="text-center">@ViewData["Title"]</h1>
 
-<h1>Index</h1>
+    <p class="text-center my-4">
+        <a asp-action="Create" class="btn btn-lg btn-primary shadow-sm">+ Create New</a>
+    </p>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Home.HouseName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Brand)
-            </th>           
-            <th>
-                @Html.DisplayNameFor(model => model.PowerRating)
-            </th>           
-
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Home.HouseName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Brand)
-            </td>            
-            <td>
-                @Html.DisplayFor(modelItem => item.PowerRating)
-            </td>            
-
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ApplianceId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ApplianceId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ApplianceId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4">
+                <div class="card border-0 shadow">
+                    <div class="card-body">
+                        <h3 class="card-title text-dark">@item.Name</h3>
+                        <ul class="list-unstyled mt-3 mb-4">
+                            <li><strong>House:</strong> @item.Home.HouseName</li>
+                            <li><strong>Brand:</strong> @item.Brand</li>
+                            <li><strong>Power Rating:</strong> @item.PowerRating</li>
+                        </ul>
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <a asp-action="Edit" asp-route-id="@item.ApplianceId" class="btn btn-warning btn-lg w-100">Edit</a>
+                            </div>
+                            <div class="col-4">
+                                <a asp-action="Details" asp-route-id="@item.ApplianceId" class="btn btn-info btn-lg w-100">Details</a>
+                            </div>
+                            <div class="col-4">
+                                <a asp-action="Delete" asp-route-id="@item.ApplianceId" class="btn btn-danger btn-lg w-100">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

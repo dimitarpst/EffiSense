@@ -1,61 +1,43 @@
 ﻿@model Home
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Home Details";
 }
 
-<h1>Details</h1>
+<div class="container py-5">
+    <h1 class="text-center mb-4">@ViewData["Title"]</h1>
 
-<div>
-    <h4>Home</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            House Name
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.HouseName)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Size) (sq. m)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Size)
-        </dd>
-        <dt class="col-sm-2">
-            Heating Type
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.HeatingType)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Location)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Location)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Address)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Address)
-        </dd>
-        <dt class="col-sm-2">
-            BuildingType
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.BuildingType)
-        </dd>
-        <dt class="col-sm-2">
-            Insulation  Level
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.InsulationLevel)
-        </dd>
-
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.HomeId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <div class="card shadow-lg border-0">
+        <div class="card-body">
+            <h3 class="card-title text-dark">Home Details</h3>
+            <hr />
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <strong>House Name:</strong> @Html.DisplayFor(model => model.HouseName)
+                </li>
+                <li class="list-group-item">
+                    <strong>Size (sq. m):</strong> @Html.DisplayFor(model => model.Size)
+                </li>
+                <li class="list-group-item">
+                    <strong>Heating Type:</strong> @Html.DisplayFor(model => model.HeatingType)
+                </li>
+                <li class="list-group-item">
+                    <strong>Location:</strong> @Html.DisplayFor(model => model.Location)
+                </li>
+                <li class="list-group-item">
+                    <strong>Address:</strong> @Html.DisplayFor(model => model.Address)
+                </li>
+                <li class="list-group-item">
+                    <strong>Building Type:</strong> @Html.DisplayFor(model => model.BuildingType)
+                </li>
+                <li class="list-group-item">
+                    <strong>Insulation Level:</strong> @Html.DisplayFor(model => model.InsulationLevel)
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer text-center">
+            <a asp-action="Edit" asp-route-id="@Model?.HomeId" class="btn btn-warning btn-lg">Edit</a>
+            <a asp-action="Index" class="btn btn-secondary btn-lg ms-2">Back to List</a>
+        </div>
+    </div>
 </div>

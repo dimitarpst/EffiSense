@@ -1,0 +1,80 @@
+﻿.container {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+    .card:hover {
+        transform: scale(1.03);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    }
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #343a40;
+}
+
+.card .list-unstyled li {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.card .btn {
+    font-size: 1rem;
+    padding: 0.75rem;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+    .btn-warning:hover {
+        background-color: transparent;
+        color: #ffc107;
+    }
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: #fff;
+}
+
+    .btn-info:hover {
+        background-color: transparent;
+        color: #17a2b8;
+    }
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+    .btn-danger:hover {
+        background-color: transparent;
+        color: #dc3545;
+    }
+
+.btn-primary {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+    .btn-primary:hover {
+        background-color: transparent;
+        color: #007bff;
+    }

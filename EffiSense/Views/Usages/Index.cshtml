@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<Usage>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Usages";
     var usageFrequencyMap = new Dictionary<int, string>
     {
         { 1, "Rarely" },
@@ -12,59 +12,49 @@
     };
 }
 
-<h1>Index</h1>
+<div class="container">
+    <h1 class="text-center">@ViewData["Title"]</h1>
 
-<div class="mb-3">
-    <label for="filterDate" class="form-label">Filter by Date:</label>
-    <input type="date" id="filterDate" class="form-control d-inline-block" style="width: auto;" />
-</div>
+    <div class="mb-4 text-center">
+        <label for="filterDate" class="form-label me-2">Filter by Date:</label>
+        <input type="date" id="filterDate" class="form-control d-inline-block" style="width: auto;" />
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                House Name
-            </th>
-            <th>
-                Appliance Name
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Date)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.EnergyUsed) (kWh)
-            </th>
-            <th>
-                Usage Frequency
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody id="usageTableBody">
+    <p class="text-center my-4">
+        <a asp-action="Create" class="btn btn-lg btn-primary shadow-sm">+ Create New</a>
+    </p>
+
+    <div id="usageCardContainer" class="row g-4">
         @foreach (var item in Model)
         {
-            <tr>
-                <td>@Html.DisplayFor(modelItem => item.Appliance.Home.HouseName)</td>
-                <td>@Html.DisplayFor(modelItem => item.Appliance.Name)</td>
-                <td>@Html.DisplayFor(modelItem => item.Date)</td>
-                <td>@Html.DisplayFor(modelItem => item.EnergyUsed)</td>
-                <td>@(usageFrequencyMap.ContainsKey(item.UsageFrequency) ? usageFrequencyMap[item.UsageFrequency] : "Unknown")</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.UsageId">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.UsageId">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.UsageId">Delete</a>
-                </td>
-            </tr>
+            <div class="col-md-4">
+                <div class="card border-0 shadow">
+                    <div class="card-body">
+                        <h3 class="card-title text-dark">@item.Appliance.Name</h3>
+                        <ul class="list-unstyled mt-3 mb-4">
+                            <li><strong>House Name:</strong> @item.Appliance.Home.HouseName</li>
+                            <li><strong>Date:</strong> @item.Date.ToShortDateString()</li>
+                            <li><strong>Energy Used:</strong> @item.EnergyUsed kWh</li>
+                            <li><strong>Frequency:</strong> @(usageFrequencyMap.ContainsKey(item.UsageFrequency) ? usageFrequencyMap[item.UsageFrequency] : "Unknown")</li>
+                        </ul>
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <a asp-action="Edit" asp-route-id="@item.UsageId" class="btn btn-warning btn-lg w-100">Edit</a>
+                            </div>
+                            <div class="col-4">
+                                <a asp-action="Details" asp-route-id="@item.UsageId" class="btn btn-info btn-lg w-100">Details</a>
+                            </div>
+                            <div class="col-4">
+                                <a asp-action="Delete" asp-route-id="@item.UsageId" class="btn btn-danger btn-lg w-100">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         }
-    </tbody>
-
-
-</table>
+    </div>
+</div>
 
 @section Scripts {
     <script src="~/js/usagesIndex.js"></script>
 }
-

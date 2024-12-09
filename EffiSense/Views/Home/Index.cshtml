@@ -1,22 +1,71 @@
-﻿<div>
-    <h2>Energy Usage Chart</h2>
-    <canvas id="usageChart" width="400" height="100"></canvas>
-</div>
-<div>
-    <h2>Energy Efficiency Suggestions</h2>
-    <div>
-        <label for="userPrompt">Provide additional details for a suggestion:</label>
-        <input type="text" id="userPrompt" class="form-control" placeholder="e.g., I use my air conditioner every day." />
-        <button id="getSuggestionButton" class="btn btn-primary mt-2">Get Suggestion</button>
+﻿<div class="container my-4">
+    <h1 class="text-center mb-4">Dashboard</h1>
+    <div class="row g-4">
+        <div class="col-lg-6 col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="card-title text-center">Energy Usage by Day</h4>
+                    <canvas id="usageChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="card-title text-center">Energy Usage by Appliance</h4>
+                    <canvas id="applianceChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="card-title text-center">Energy Usage by Home</h4>
+                    <canvas id="homeChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="card-title text-center">Peak Energy Usage Times</h4>
+                    <canvas id="peakTimeChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="suggestionContainer" class="fs-5" style="margin-top: 15px;"></div>
+
+    <div class="mt-5">
+        <h2>Energy Efficiency Suggestions</h2>
+        <div>
+            <label for="userPrompt">Provide additional details for a suggestion:</label>
+            <input type="text" id="userPrompt" class="form-control" placeholder="e.g., I use my air conditioner every day." />
+            <button id="getSuggestionButton" class="btn btn-primary mt-2">Get Suggestion</button>
+        </div>
+        <div id="suggestionContainer" class="fs-5 mt-3"></div>
+    </div>
 </div>
+
 @section Scripts {
     <script src="~/js/charts/usageChart.js"></script>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const suggestionContainer = document.getElementById('suggestionContainer');
+            suggestionContainer.style.display = 'none';
+        });
+
         document.getElementById('getSuggestionButton').addEventListener('click', function () {
             const userPrompt = document.getElementById('userPrompt').value;
+            const suggestionContainer = document.getElementById('suggestionContainer');
+
+            suggestionContainer.style.display = 'block';
+            suggestionContainer.innerHTML = `<div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                             </div>`;
 
             fetch(`/Usages/GetDashboardSuggestion`, {
                 method: 'POST',
@@ -27,7 +76,6 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    const suggestionContainer = document.getElementById('suggestionContainer');
                     if (data.success) {
                         suggestionContainer.innerHTML = `<p><strong>Suggestion:</strong> ${data.suggestion}</p>`;
                     } else {
@@ -36,7 +84,7 @@
                 })
                 .catch(error => {
                     console.error('Error fetching suggestion:', error);
-                    document.getElementById('suggestionContainer').innerHTML = `<p class="text-danger">An error occurred while fetching the suggestion. Please try again.</p>`;
+                    suggestionContainer.innerHTML = `<p class="text-danger">An error occurred while fetching the suggestion. Please try again.</p>`;
                 });
         });
     </script>

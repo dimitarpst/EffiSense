@@ -1,8 +1,15 @@
 ﻿$(document).ready(function () {
     const applianceDropdown = $("#ApplianceId");
+    const homeDropdown = $("#HomeId");
+
+    if (!applianceDropdown.length || !homeDropdown.length) {
+        console.error("Required dropdowns not found in DOM.");
+        return;
+    }
+
     const selectedApplianceId = applianceDropdown.data("selected-id");
 
-    $("#HomeId").change(function () {
+    homeDropdown.change(function () {
         const homeId = $(this).val();
 
         applianceDropdown.empty().append('<option value="">Select Appliance</option>');
@@ -24,8 +31,8 @@
         }
     });
 
-    const selectedHomeId = $("#HomeId").val();
+    const selectedHomeId = homeDropdown.val();
     if (selectedHomeId) {
-        $("#HomeId").trigger("change");
+        homeDropdown.trigger("change");
     }
 });

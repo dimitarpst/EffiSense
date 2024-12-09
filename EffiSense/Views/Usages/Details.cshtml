@@ -1,7 +1,7 @@
 ﻿@model Usage
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Usage Details";
     var usageFrequencyMap = new Dictionary<int, string>
     {
         { 1, "Rarely" },
@@ -12,46 +12,34 @@
     };
 }
 
-<h1>Details</h1>
+<div class="container py-5">
+    <h1 class="text-center mb-4">@ViewData["Title"]</h1>
 
-<div>
-    <h4>Usage</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            House Name
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Appliance.Home.HouseName)
-        </dd>
-        <dt class="col-sm-2">
-            Appliance Name
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Appliance.ApplianceId)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Date)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Date)
-        </dd>
-        <dt class="col-sm-2">
-            Energy Used (kWh)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.EnergyUsed)
-        </dd>
-        <dt class="col-sm-2">
-            Usage Frequency
-        </dt>
-        <dd class="col-sm-10">@(usageFrequencyMap.ContainsKey(Model.UsageFrequency) ? usageFrequencyMap[Model.UsageFrequency] : "Unknown")</dd>
-        </dd>
-
-    </dl>
-</div>
-
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.UsageId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <div class="card shadow-lg border-0">
+        <div class="card-body">
+            <h3 class="card-title text-dark">Details of Usage</h3>
+            <hr />
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <strong>House Name:</strong> @Html.DisplayFor(model => model.Appliance.Home.HouseName)
+                </li>
+                <li class="list-group-item">
+                    <strong>Appliance Name:</strong> @Html.DisplayFor(model => model.Appliance.Name)
+                </li>
+                <li class="list-group-item">
+                    <strong>Date:</strong> @Html.DisplayFor(model => model.Date)
+                </li>
+                <li class="list-group-item">
+                    <strong>Energy Used (kWh):</strong> @Html.DisplayFor(model => model.EnergyUsed)
+                </li>
+                <li class="list-group-item">
+                    <strong>Usage Frequency:</strong> @(usageFrequencyMap.ContainsKey(Model.UsageFrequency) ? usageFrequencyMap[Model.UsageFrequency] : "Unknown")
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer text-center">
+            <a asp-action="Edit" asp-route-id="@Model?.UsageId" class="btn btn-warning btn-lg">Edit</a>
+            <a asp-action="Index" class="btn btn-secondary btn-lg ms-2">Back to List</a>
+        </div>
+    </div>
 </div>

@@ -132,3 +132,12 @@ canvas {
     margin: 10px auto;
     display: block;
 }
+
+.bolt-icon {
+    transition: font-size 0.3s ease-in-out;
+    font-size: 36px; /* Default font size */
+}
+
+    .bolt-icon.expanded {
+        font-size: 48px; /* Expanded font size */
+    }

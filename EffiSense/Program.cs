@@ -1,4 +1,7 @@
-﻿using EffiSense.Data;
+﻿using EffiSense.Controllers;
+using EffiSense.Data;
+using EffiSense.Models;
+using EffiSense.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +24,8 @@ namespace EffiSense
                 .AddDefaultTokenProviders(); 
 
             builder.Services.AddControllersWithViews();
+            builder.Services.AddSignalR();
+            builder.Services.AddHostedService<IoTUsageSimulator>();
 
             var app = builder.Build();
 
@@ -37,7 +42,6 @@ namespace EffiSense
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
 
             app.UseAuthorization();
@@ -46,6 +50,7 @@ namespace EffiSense
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
+            app.MapHub<UsageHub>("/usageHub");
 
             app.Run();
         }

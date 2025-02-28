@@ -233,6 +233,25 @@ namespace EffiSense.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ToggleSimulation(bool enable, int interval)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            using var scope = _context;
+
+            // Update user settings
+            user.IsSimulationEnabled = enable;
+            user.SelectedSimulationInterval = interval;
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = enable ? "Simulation started." : "Simulation stopped." });
+        }
 
 
         private bool HomeExists(int id)

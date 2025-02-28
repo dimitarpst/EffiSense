@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Policy;
 using System.Threading.Tasks;
+using EffiSense.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using OpenAI_API;
 using OpenAI_API.Chat;
@@ -40,7 +42,7 @@ namespace EffiSense.Controllers
                     Model = "gpt-3.5-turbo",
                     Messages = new[]
                     {
-                new ChatMessage(ChatMessageRole.System, "Roast damian with history jokes"),
+                new ChatMessage(ChatMessageRole.System, "You are an assistant that provides energy-efficiency tips. Your clients are European and use EU standards for measuring energy usage, as well as Celsius instead of Fahrenheit. Do not answer any questions that do not regard energy-efficiency. Try to use the data provided about specific appliances as much as possible. When outputing, DO NOT bold text and DO NOT use lists!"),
                 new ChatMessage(ChatMessageRole.User, prompt)
             },
                     MaxTokens = 150
@@ -183,6 +185,20 @@ namespace EffiSense.Controllers
             {
                 _context.Add(usage);
                 await _context.SaveChangesAsync();
+
+                // ✅ Inject SignalR Hub Context
+                var hubContext = HttpContext.RequestServices.GetRequiredService<IHubContext<UsageHub>>();
+                await hubContext.Clients.All.SendAsync("ReceiveUsageUpdate", new
+                {
+                    UsageId = usage.UsageId,
+                    ApplianceName = appliance.Name,
+                    HomeName = appliance.Home.HouseName,
+                    Date = usage.Date.ToString("yyyy-MM-dd"),
+                    EnergyUsed = usage.EnergyUsed,
+                    UsageFrequency = usage.UsageFrequency
+                });
+
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -395,11 +411,6 @@ namespace EffiSense.Controllers
             return PartialView("~/Views/Shared/_UpdateTableRows.cshtml", filteredUsages);
 
         }
-
-
-
-
-
 
         private bool UsageExists(int id)
         {

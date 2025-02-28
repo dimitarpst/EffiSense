@@ -67,14 +67,75 @@
         color: #dc3545;
     }
 
-.btn-primary {
+.btn-primary,
+.btn-danger,
+.btn-success {
     padding: 0.75rem 1.5rem;
     font-size: 1.2rem;
     border-radius: 8px;
     font-weight: bold;
+    transition: all 0.3s ease-in-out;
 }
 
     .btn-primary:hover {
         background-color: transparent;
         color: #007bff;
     }
+
+    .btn-danger:hover {
+        background-color: transparent;
+        color: #dc3545;
+    }
+
+    .btn-success:hover {
+        background-color: transparent;
+        color: #28a745;
+    }
+.status-light {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.status-light.active {
+    background-color: #28a745!important;
+    animation: blink 1s infinite;
+}
+
+.status-light.inactive {
+    background-color: #dc3545;
+}
+
+#intervalInput {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+canvas {
+    width: 100% !important;
+    max-height: 400px;
+}
+
+@media (max-width: 767px) {
+    canvas {
+        max-height: 300px;
+    }
+}
+

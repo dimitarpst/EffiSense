@@ -78,6 +78,38 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // ✅ SignalR Connection Setup (Global)
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/usageHub")
+                .build();
+
+            connection.start()
+                .then(() => console.log("SignalR Connected ✅"))
+                .catch(err => console.error("SignalR Error:", err));
+
+            // ✅ Ensure Simulation Button Syncs Across Pages
+            fetch("/Home/GetSimulationState")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const toggleButton = document.getElementById("toggleSimulation");
+                        const simulationStatus = document.getElementById("simulationStatus");
+
+                        if (toggleButton && simulationStatus) {
+                            toggleButton.textContent = data.isRunning ? "Stop Simulation" : "Start Simulation";
+                            toggleButton.classList.toggle("btn-danger", data.isRunning);
+                            toggleButton.classList.toggle("btn-success", !data.isRunning);
+                            simulationStatus.textContent = data.isRunning ? "Simulation is ON" : "Simulation is OFF";
+                        }
+                    }
+                })
+                .catch(error => console.error("Error fetching simulation state:", error));
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

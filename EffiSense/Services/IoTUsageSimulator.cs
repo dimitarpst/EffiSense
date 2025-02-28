@@ -34,7 +34,6 @@ namespace EffiSense.Services
                 using var scope = _scopeFactory.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                // ✅ Re-fetch users to ensure we have the latest interval settings
                 var usersWithSimulation = await dbContext.Users
                     .Where(u => u.IsSimulationEnabled)
                     .ToListAsync();
@@ -74,13 +73,16 @@ namespace EffiSense.Services
                     });
                 }
 
-                // ✅ Dynamically fetch the interval every loop
+                _logger.LogInformation($"⏳ Fetching interval for simulation...");
+
                 var minInterval = usersWithSimulation.Any()
                     ? TimeSpan.FromSeconds(usersWithSimulation.Min(u => u.SelectedSimulationInterval))
                     : TimeSpan.FromSeconds(5);
 
+
                 _logger.LogInformation($"⏳ Next usage in {minInterval.TotalSeconds} seconds...");
                 await Task.Delay(minInterval, stoppingToken);
+
             }
         }
 

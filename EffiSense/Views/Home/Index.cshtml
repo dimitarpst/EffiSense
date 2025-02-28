@@ -150,32 +150,75 @@
                 });
             });
 
-               const toggleButton = document.getElementById("toggleSimulation");
-        const simulationIndicator = document.getElementById("simulationIndicator");
-        const simulationIcon = document.getElementById("simulationIcon");
+            const toggleButton = document.getElementById("toggleSimulation");
+            const simulationIndicator = document.getElementById("simulationIndicator");
+            const simulationIcon = document.getElementById("simulationIcon");
+            const intervalInput = document.getElementById("intervalInput");
+            const updateIntervalButton = document.getElementById("updateInterval");
 
-        let isSimulationRunning = false;
+            let isSimulationRunning = false;
 
-        fetch("/Home/GetSimulationState")
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    isSimulationRunning = data.isRunning;
-                    updateSimulationUI();
-                }
-            })
-            .catch(error => console.error("Error fetching simulation state:", error));
+            fetch("/Home/GetSimulationState")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        isSimulationRunning = data.isRunning;
+                        intervalInput.value = data.interval;
+                        updateSimulationUI();
+                    }
+                })
+                .catch(error => console.error("Error fetching simulation state:", error));
 
         toggleButton.addEventListener("click", function () {
             isSimulationRunning = !isSimulationRunning;
-            fetch(`/Home/ToggleSimulation?enable=${isSimulationRunning}`, { method: 'POST' })
+            let currentInterval = parseInt(intervalInput.value) || 5; // Fallback to 5s if empty/invalid
+
+            fetch(`/Home/ToggleSimulation?enable=${isSimulationRunning}&interval=${currentInterval}`, { method: 'POST' })
             .then(response => response.json())
             .then(data => {
                 if (data.success) updateSimulationUI();
-            });
+            })
+            .catch(error => console.error("Error toggling simulation:", error));
         });
 
-        function updateSimulationUI() {
+
+            updateIntervalButton.addEventListener("click", function () {
+                let newInterval = parseInt(intervalInput.value);
+
+                if (isNaN(newInterval) || newInterval < 1 || newInterval > 60) {
+                    alert("Please enter a valid number between 1 and 60.");
+                    return;
+                }
+
+                fetch(`/Home/UpdateSimulationInterval?interval=${newInterval}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log(`✅ Interval updated to ${newInterval}s`);
+
+                        fetch("/Home/GetSimulationState")
+                            .then(response => response.json())
+                            .then(state => {
+                                if (state.success) {
+                                    intervalInput.value = state.interval; 
+                                    console.log(`✅ Simulation running: ${state.isRunning}, Interval: ${state.interval}s`);
+                                }
+                            });
+                    } else {
+                        console.error("❌ Failed to update interval:", data.message);
+                        alert("Error: Could not update interval. Try again.");
+                    }
+                })
+                .catch(error => {
+                    console.error("❌ Error updating interval:", error);
+                    alert("Error: Network issue. Try again.");
+                });
+            });
+
+            function updateSimulationUI() {
                 simulationIcon.textContent = isSimulationRunning ? "stop" : "play_arrow";
 
                 if (isSimulationRunning) {
@@ -186,8 +229,7 @@
                     simulationIndicator.classList.remove("active");
                 }
             }
-
-
         });
     </script>
 }
+

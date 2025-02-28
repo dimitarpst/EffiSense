@@ -1,7 +1,8 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
+
     let charts = [];
 
-    function createChart(ctx, type, labels, data, label, backgroundColor, borderColor, extraOptions = {}) {
+    function createChart(ctx, type, labels, data, label, backgroundColor, borderColor) {
         let chart = new Chart(ctx, {
             type: type,
             data: {
@@ -11,22 +12,23 @@
                     data: data,
                     backgroundColor: backgroundColor,
                     borderColor: borderColor,
-                    borderWidth: 1,
-                    tension: 0.1, 
+                    borderWidth: 2,
+                    tension: 0.4,
                     fill: true
                 }]
             },
-            options: Object.assign({
+            options: {
                 responsive: true,
-                maintainAspectRatio: false,
-                devicePixelRatio: 1,
+                maintainAspectRatio: false, 
+                devicePixelRatio: window.devicePixelRatio > 1 ? 1.5 : 1,
+                animation: false,
                 scales: {
                     y: { beginAtZero: true }
                 },
                 plugins: {
                     legend: { display: true, position: "top" }
                 }
-            }, extraOptions)
+            }
         });
 
         charts.push(chart);
@@ -66,9 +68,13 @@
 
 
     document.getElementById("sidebarToggle").addEventListener("click", function () {
-        requestAnimationFrame(() => {
-            charts.forEach(chart => chart.resize());
-        });
+        setTimeout(() => {
+            charts.forEach(chart => {
+                chart.resize();
+                chart.update();
+            });
+        }, 250);  // ✅ Give time for the layout to settle before redrawing
     });
+
 
 });

@@ -139,3 +139,9 @@ canvas {
     }
 }
 
+.custom-div {
+    max-width: 100%; /* Makes sure it takes the full width */
+    margin-left: auto; /* Centers content */
+    margin-right: auto; /* Centers content */
+    padding: 20px; /* Removes default padding */
+}

@@ -11,19 +11,18 @@
                     data: data,
                     backgroundColor: backgroundColor,
                     borderColor: borderColor,
-                    borderWidth: 2,
-                    tension: 0.4, // Smooth curves for line charts
-                    fill: true // Fill effect for area charts
+                    borderWidth: 1,
+                    tension: 0.1, 
+                    fill: true
                 }]
             },
             options: Object.assign({
                 responsive: true,
                 maintainAspectRatio: false,
-                devicePixelRatio: 2,
+                devicePixelRatio: 1,
                 scales: {
                     y: { beginAtZero: true }
                 },
-                animation: { duration: 800 },
                 plugins: {
                     legend: { display: true, position: "top" }
                 }

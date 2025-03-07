@@ -73,7 +73,7 @@
                 chart.resize();
                 chart.update();
             });
-        }, 250);  // ✅ Give time for the layout to settle before redrawing
+        }, 250);
     });
 
 

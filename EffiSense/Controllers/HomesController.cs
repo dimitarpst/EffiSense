@@ -244,7 +244,6 @@ namespace EffiSense.Controllers
 
             using var scope = _context;
 
-            // Update user settings
             user.IsSimulationEnabled = enable;
             user.SelectedSimulationInterval = interval;
 

@@ -6,9 +6,11 @@
     <title>@ViewData["Title"] - EffiSense</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/createEdit.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/chatbot.css" asp-append-version="true" />
 </head>
 <body>
     <div class="d-flex" id="wrapper">
@@ -66,22 +68,41 @@
                 </div>
             </main>
 
-            <footer class="bg-light text-muted py-3">
-                <div class="container text-center">
-                    &copy; 2024 - EffiSense
-                </div>
-            </footer>
         </div>
     </div>
+
+    <div id="chatbot-fab">
+        <i class="fab-icon fas fa-comment-dots"></i>
+        <i class="fab-icon fas fa-times"></i>
+    </div>
+
+    <div id="chatbot-window">
+        <div class="chat-header">
+            <span>EffiSense Асистент</span>
+            <button id="chatbot-close-btn">&times;</button>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div class="message bot-message">
+                Здравей! Аз съм твоят EffiSense асистент. С какво мога да помогна днес?
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatbot-input" placeholder="Напиши съобщение...">
+            <button id="chatbot-send-btn">
+                <i class="fas fa-arrow-up"></i>
+            </button>
+        </div>
+    </div>
+
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/chatbot.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // ✅ SignalR Connection Setup (Global)
             const connection = new signalR.HubConnectionBuilder()
                 .withUrl("/usageHub")
                 .build();
@@ -90,7 +111,6 @@
                 .then(() => console.log("SignalR Connected ✅"))
                 .catch(err => console.error("SignalR Error:", err));
 
-            // ✅ Ensure Simulation Button Syncs Across Pages
             fetch("/Home/GetSimulationState")
                 .then(response => response.json())
                 .then(data => {

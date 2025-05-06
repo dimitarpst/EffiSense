@@ -8,6 +8,39 @@
     let isChatOpen = false;
     let typingIndicatorTimeout;
     let wordAppendTimeout;
+    let historyLoadedOrLoading = false;
+
+    function loadChatHistory() {
+        if (historyLoadedOrLoading) return; // Don't load if already loading or loaded this session
+
+        historyLoadedOrLoading = true; // Mark as loading
+        $chatBody.empty(); // Clear previous messages (like default welcome)
+
+        $.ajax({
+            url: '/Usages/GetChatHistory', // New endpoint
+            type: 'GET',
+            dataType: 'json',
+            success: function (messages) {
+                if (messages && messages.length > 0) {
+                    messages.forEach(function (msg) {
+                        // Append history messages instantly, no word-by-word animation
+                        appendMessage(msg.text, msg.senderType === 'user' ? 'user-message' : 'bot-message', true);
+                    });
+                } else {
+                    // If no history, display the initial bot welcome message
+                    appendMessage("Hello! I'm your EffiSense assistant. How can I help you today?", 'bot-message', true);
+                }
+                scrollToBottom(true); // Instant scroll
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading chat history:", status, error, xhr.responseText);
+                // Fallback to default welcome message on error
+                appendMessage("Hello! I'm your EffiSense assistant. How can I help you today?", 'bot-message', true);
+                scrollToBottom(true);
+            }
+            // Not setting historyLoadedOrLoading to false here, it's per "chat open" session
+        });
+    }
 
     $chatbotFab.on('click', toggleChatWindow);
     $closeBtn.on('click', toggleChatWindow);
@@ -16,6 +49,15 @@
         isChatOpen = !isChatOpen;
         $chatWindow.toggleClass('open');
         $chatbotFab.toggleClass('fab-open');
+
+        if (isChatOpen) {
+            historyLoadedOrLoading = false; // Reset for new open session
+            loadChatHistory();
+        } else {
+            // When closing, you might want to clear the chat body if you don't want messages
+            // to persist visually until the next history load. For now, let's leave them.
+            // $chatBody.empty(); // Optional: clear on close
+        }
     }
 
     $sendBtn.on('click', sendMessage);
@@ -32,16 +74,17 @@
             return;
         }
 
-        displayUserMessage(messageText);
+        // User message is appended instantly
+        appendMessage(messageText, 'user-message', true);
         $chatInput.val('');
         clearTimeout(wordAppendTimeout);
 
-        const showIndicatorDelay = 200;
+        const showIndicatorDelay = 150; // Slightly adjusted
         setTimeout(() => {
             showTypingIndicator();
 
             $.ajax({
-                url: '/Usages/GetDashboardSuggestion',
+                url: '/Usages/GetDashboardSuggestion', // This now also saves messages
                 type: 'POST',
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
@@ -51,9 +94,10 @@
                     const hideDurationEstimate = 400;
                     setTimeout(() => {
                         if (response.success) {
-                            displayBotMessage(response.suggestion);
+                            // Display bot's response with word-by-word animation
+                            appendMessage(response.suggestion, 'bot-message', false);
                         } else {
-                            displayBotMessage(response.message || "Sorry, I couldn't get a suggestion right now.");
+                            appendMessage(response.message || "Sorry, I couldn't get a suggestion right now.", 'bot-message', false);
                         }
                     }, hideDurationEstimate);
                 },
@@ -62,7 +106,7 @@
                     const hideDurationEstimate = 400;
                     setTimeout(() => {
                         console.error("AJAX Error:", status, error, xhr.responseText);
-                        displayBotMessage("Sorry, there was an error connecting to the assistant. Please try again.");
+                        appendMessage("Sorry, there was an error connecting to the assistant. Please try again.", 'bot-message', false);
                     }, hideDurationEstimate);
                 }
             });
@@ -70,56 +114,43 @@
         }, showIndicatorDelay);
     }
 
-    function displayUserMessage(text) {
-        appendMessage(text, 'user-message');
-    }
-
-    function displayBotMessage(text) {
-        appendMessage(text, 'bot-message');
-    }
-
-    function appendMessage(text, messageClass) {
+    // Modified appendMessage for instant vs. animated
+    function appendMessage(text, messageClass, instant = false) {
         const $messageElement = $('<div></div>').addClass('message ' + messageClass);
 
-        if (messageClass === 'bot-message') {
+        if (messageClass === 'bot-message' && !instant) {
             $chatBody.append($messageElement);
-            scrollToBottom();
+            // scrollToBottom(); // Scroll when container is ready
 
-            const wordsAndSpaces = text.split(/(\s+)/); 
+            const wordsAndSpaces = text.split(/(\s+)/);
             let wordIndex = 0;
-            const wordFadeDelay = 45; 
+            const wordFadeDelay = 70;
 
             function animateNextWord() {
                 if (wordIndex < wordsAndSpaces.length) {
                     const part = wordsAndSpaces[wordIndex];
-                    if (part.trim() !== '') { 
+                    if (part.trim() !== '') {
                         const $wordSpan = $('<span></span>')
-                            .addClass('word-to-animate') 
+                            .addClass('word-to-animate')
                             .text(part);
                         $messageElement.append($wordSpan);
-
                         setTimeout(() => {
                             $wordSpan.css('opacity', 1);
                         }, 10);
-
-                    } else { 
+                    } else {
                         $messageElement.append(document.createTextNode(part));
                     }
-
-                    scrollToBottom(); 
+                    scrollToBottom();
                     wordIndex++;
                     wordAppendTimeout = setTimeout(animateNextWord, wordFadeDelay);
                 }
             }
-
-            const initialDelayForBubble = 50; 
+            const initialDelayForBubble = 50;
             wordAppendTimeout = setTimeout(animateNextWord, initialDelayForBubble);
-
-
         } else {
             $messageElement.text(text);
             $chatBody.append($messageElement);
-            scrollToBottom();
+            scrollToBottom(instant); // Pass instant flag
         }
     }
 
@@ -155,12 +186,18 @@
         }, 100);
     }
 
-    function scrollToBottom() {
-        $chatBody.animate({
-            scrollTop: $chatBody.prop("scrollHeight")
-        }, 200);
+    function scrollToBottom(instant = false) {
+        const scrollTopVal = $chatBody.prop("scrollHeight");
+        if (instant) {
+            $chatBody.scrollTop(scrollTopVal);
+        } else {
+            $chatBody.animate({
+                scrollTop: scrollTopVal
+            }, 200);
+        }
     }
 
+    // (Keep the keyframes check/insert code)
     const styleSheet = document.styleSheets[0];
     let ruleExists = false;
     try {

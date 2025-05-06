@@ -61,41 +61,114 @@ namespace EffiSense.Controllers
         public async Task<IActionResult> GetDashboardSuggestion([FromBody] string userPrompt)
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized(new { success = false, message = "User not authenticated." });
+            }
 
+            if (string.IsNullOrWhiteSpace(userPrompt))
+            {
+                return BadRequest(new { success = false, message = "Prompt cannot be empty." });
+            }
+
+            // 1. Save User's Message
+            var userMessageLog = new ChatMessageLog
+            {
+                UserId = user.Id,
+                MessageText = userPrompt,
+                Sender = MessageSender.User,
+                Timestamp = DateTime.UtcNow // Use UTC
+            };
+            _context.ChatMessageLogs.Add(userMessageLog);
+            // Note: We'll call SaveChangesAsync once after getting the bot's response
+
+            // --- Existing logic to build context for OpenAI ---
             var appliancesList = await _context.Usages
                 .Include(u => u.Appliance)
                 .Where(u => u.UserId == user.Id)
-                .OrderByDescending(u => u.UsageFrequency)
+                .OrderByDescending(u => u.EnergyUsed) // Example: most used
+                .ThenByDescending(u => u.UsageFrequency)
+                .Take(3) // Limit for prompt conciseness
                 .ToListAsync();
-
-            var topUsage = appliancesList.OrderByDescending(u => u.EnergyUsed).FirstOrDefault();
-
-            if (topUsage == null)
-            {
-                return Json(new { success = false, message = "No usage data available." });
-            }
 
             var homesList = await _context.Homes
-                .Where(u => u.UserId == user.Id)
+                .Where(h => h.UserId == user.Id)
+                .Take(2) // Limit for prompt conciseness
                 .ToListAsync();
 
-            string homeDetails = $"These are the characteristics of my {homesList.Count} homes: ";
-            foreach (var home in homesList)
+            string homeDetails = "My home setup: ";
+            if (homesList.Any())
             {
-                homeDetails+=($"{home.HouseName} of type {home.BuildingType}, which has a footprint of {home.Size} m^2. ");
+                homeDetails += string.Join("; ", homesList.Select(h =>
+                    $"a {h.BuildingType} ('{h.HouseName}') of {h.Size}m^2, insulation: {h.InsulationLevel}, heating: {h.HeatingType}"));
             }
-            string applianceDetails = $"The following are the appliances I use most often (the lower the rating is the better):";
-            foreach (var appliance in appliancesList.Take(3))
+            else
             {
-                applianceDetails+=($"{appliance.Appliance.Name} with a {appliance.Appliance.PowerRating} rating, ");
+                homeDetails += " general household.";
             }
-            applianceDetails+=($"... with my highest consumption coming from {topUsage.Appliance.Name} which consumes {topUsage.EnergyUsed} kWh daily");
-            string aiPrompt = $"{homeDetails}.{applianceDetails}. Provide a suggestion to help with this problem, give a direct answer to this question: {userPrompt}.";
 
-            var suggestion = await GetEnergyEfficiencyTips(aiPrompt);
+            string applianceDetails = " Key appliances by usage: ";
+            if (appliancesList.Any())
+            {
+                applianceDetails += string.Join("; ", appliancesList.Select(a =>
+                    $"{a.Appliance.Name} ({a.Appliance.PowerRating}, used {a.EnergyUsed} kWh)"));
+            }
+            else
+            {
+                applianceDetails += " no specific appliance data to share for this query.";
+            }
+            // --- End of context building ---
 
-            return Json(new { success = true, suggestion });
+            string finalAiPrompt = $"Context: {homeDetails}. {applianceDetails}. My question is: {userPrompt}";
+
+            var botSuggestion = await GetEnergyEfficiencyTips(finalAiPrompt); // Your existing method
+
+            // 2. Save Bot's Response
+            var botMessageLog = new ChatMessageLog
+            {
+                UserId = user.Id,
+                MessageText = botSuggestion,
+                Sender = MessageSender.Bot,
+                Timestamp = DateTime.UtcNow.AddMilliseconds(1) // Ensure it's after the user's message
+            };
+            _context.ChatMessageLogs.Add(botMessageLog);
+
+            try
+            {
+                await _context.SaveChangesAsync(); // Save both user and bot messages
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (ex)
+                return Json(new { success = false, message = "Error saving chat messages." });
+            }
+
+            return Json(new { success = true, suggestion = botSuggestion });
         }
+
+        // New Action to retrieve chat history
+        [HttpGet]
+        public async Task<IActionResult> GetChatHistory()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var history = await _context.ChatMessageLogs
+                .Where(m => m.UserId == user.Id)
+                .OrderBy(m => m.Timestamp) // Get messages in chronological order
+                .Take(50) // Or however many you want to load initially
+                .Select(m => new {
+                    text = m.MessageText,
+                    senderType = m.Sender.ToString().ToLower() // "user" or "bot" for JS
+                })
+                .ToListAsync();
+
+            return Json(history);
+        }
+
 
         public async Task<IActionResult> Index()
         {

@@ -70,35 +70,37 @@
 
         </div>
     </div>
-
-    <div id="chatbot-fab">
-        <i class="fab-icon fas fa-comment-dots"></i>
-        <i class="fab-icon fas fa-times"></i>
-    </div>
-
-    <div id="chatbot-window">
-        <div class="chat-header">
-            <span>EffiSense Асистент</span>
-            <button id="chatbot-close-btn">&times;</button>
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <div id="chatbot-fab">
+            <i class="fab-icon fas fa-comment-dots"></i>
+            <i class="fab-icon fas fa-times"></i>
         </div>
-        <div class="chat-body" id="chat-body">
-            <div class="message bot-message">
-                Здравей! Аз съм твоят EffiSense асистент. С какво мога да помогна днес?
+
+        <div id="chatbot-window">
+            <div class="chat-header">
+                <span>EffiSense Assistant</span>
+                <button id="chatbot-close-btn">&times;</button>
+            </div>
+            <div class="chat-body" id="chat-body">
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chatbot-input" placeholder="Write a message...">
+                <button id="chatbot-send-btn">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
             </div>
         </div>
-        <div class="chat-input">
-            <input type="text" id="chatbot-input" placeholder="Напиши съобщение...">
-            <button id="chatbot-send-btn">
-                <i class="fas fa-arrow-up"></i>
-            </button>
-        </div>
-    </div>
+    }
 
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/chatbot.js" asp-append-version="true"></script>
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <script src="~/js/chatbot.js" asp-append-version="true"></script>
+    }
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
     <script>

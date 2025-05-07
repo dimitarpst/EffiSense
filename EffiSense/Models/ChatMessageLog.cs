@@ -1,6 +1,4 @@
-﻿// EffiSense/Models/ChatMessageLog.cs
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EffiSense.Models
@@ -17,7 +15,7 @@ namespace EffiSense.Models
         public int ChatMessageLogId { get; set; }
 
         [Required]
-        public string UserId { get; set; } // Foreign Key to ApplicationUser Id
+        public string UserId { get; set; } 
 
         [ForeignKey("UserId")]
         public virtual ApplicationUser User { get; set; }
@@ -29,6 +27,6 @@ namespace EffiSense.Models
         public MessageSender Sender { get; set; }
 
         [Required]
-        public DateTime Timestamp { get; set; } // Store as UTC
+        public DateTime Timestamp { get; set; }
     }
 }

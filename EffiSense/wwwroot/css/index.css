@@ -143,7 +143,7 @@
 
 .card-title-brand-group {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     margin-bottom: 0.1rem; /* Small space before home name */
 }
 
@@ -443,4 +443,62 @@ canvas {
 #sidebarToggle {
     line-height: 0.7;
     color: var(--text-primary);
+}
+
+/* Style for the new location/address line */
+.card-location-address {
+    margin-top: 0.25rem; /* Space below Name/Type */
+    line-height: 1.4;
+    color: var(--text-secondary); /* Use secondary text color */
+}
+
+    .card-location-address span[title] { /* Style spans holding location/address */
+        display: inline-block; /* Or just inline */
+    }
+
+    .card-location-address i { /* Style icons */
+        opacity: 0.7;
+    }
+
+/* Adjustments for top-right details if needed */
+.card-top-right-details {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    text-align: right;
+    z-index: 2;
+    display: flex; /* Use flex for better alignment if multiple badges */
+    flex-direction: column; /* Stack items vertically */
+    align-items: flex-end; /* Align badges/text to the right */
+}
+
+    .card-top-right-details .card-efficiency-badge {
+        margin-bottom: 0.25rem; /* Space between badges/date */
+        /* Ensure badge styles from previous steps are suitable */
+        font-size: 0.7rem;
+        font-weight: bold;
+        padding: 0.2em 0.45em;
+        border-radius: var(--button-border-radius);
+        background-color: var(--accent-secondary);
+        color: var(--text-on-accent);
+        display: inline-block;
+        white-space: nowrap; /* Prevent badge text wrapping */
+    }
+
+        .card-top-right-details .card-efficiency-badge i {
+            font-size: 0.9em; /* Slightly smaller icon within badge */
+        }
+
+
+    .card-top-right-details .card-purchase-info {
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+        display: block;
+        white-space: nowrap;
+    }
+
+/* Ensure card header doesn't overlap with top-right details */
+.card-header-flex .card-title-section {
+    /* Add some padding to the right if top-right details might overlap */
+    padding-right: 60px; /* Adjust this value based on width of top-right details */
 }

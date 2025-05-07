@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using EffiSense.Data; // Assuming DbContext/Models are here or EffiSense.Models
+using EffiSense.Models;
 
 namespace EffiSense.Controllers
 {
@@ -16,19 +18,20 @@ namespace EffiSense.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-
         public HomesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
-
             _userManager = userManager;
         }
 
         public async Task<IActionResult> Index()
         {
             ViewData["Title"] = "Homes";
-
             var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
 
             var homes = await _context.Homes
                 .Where(h => h.UserId == user.Id)
@@ -37,8 +40,6 @@ namespace EffiSense.Controllers
             return View(homes);
         }
 
-        // GET: Homes/Details/5
-
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -46,9 +47,15 @@ namespace EffiSense.Controllers
                 return NotFound();
             }
 
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
             var home = await _context.Homes
-                .Include(h => h.User)
-                .FirstOrDefaultAsync(m => m.HomeId == id);
+                .FirstOrDefaultAsync(m => m.HomeId == id && m.UserId == user.Id);
+
             if (home == null)
             {
                 return NotFound();
@@ -57,46 +64,36 @@ namespace EffiSense.Controllers
             return View(home);
         }
 
-
-        // GET: Homes/Create
-
         public IActionResult Create()
         {
-            var user = _userManager.GetUserAsync(User).Result;
-
-            ViewData["UserId"] = user.Id;
-
             return View();
         }
 
-        // POST: Homes/Create
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("HomeId,Size,HeatingType,Location,BuildingType,InsulationLevel,HouseName,Address")] Home home)
+        public async Task<IActionResult> Create(
+            [Bind("HouseName,Size,HeatingType,Location,Address,BuildingType,InsulationLevel,YearBuilt,Description")] Home home)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
+            home.UserId = user.Id;
+
             ModelState.Remove("User");
             ModelState.Remove("Appliances");
-            ModelState.Remove("UserId"); 
 
             if (ModelState.IsValid)
             {
-                var user = await _userManager.GetUserAsync(User);
-
-                home.UserId = user.Id;
-
                 _context.Add(home);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewData["UserId"] = home.UserId;
             return View(home);
         }
 
-
-
-        // GET: Homes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -104,54 +101,64 @@ namespace EffiSense.Controllers
                 return NotFound();
             }
 
-            var home = await _context.Homes.FindAsync(id);
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
+            var home = await _context.Homes.FirstOrDefaultAsync(h => h.HomeId == id && h.UserId == user.Id);
             if (home == null)
             {
                 return NotFound();
             }
-
-            var user = await _userManager.GetUserAsync(User);
-            if (home.UserId != user.Id)
-            {
-                return Forbid();
-            }
-
-            ViewData["UserId"] = home.UserId;
             return View(home);
         }
 
-
-
-
-
-
-        // POST: Homes/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("HomeId,Size,HeatingType,Location,BuildingType,InsulationLevel,HouseName,Address")] Home home)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("HomeId,UserId,HouseName,Size,HeatingType,Location,Address,BuildingType,InsulationLevel,YearBuilt,Description")] Home home)
         {
-            ModelState.Remove("User"); 
-            ModelState.Remove("Appliances"); 
-            ModelState.Remove("UserId"); 
-
             if (id != home.HomeId)
             {
                 return NotFound();
             }
 
             var user = await _userManager.GetUserAsync(User);
-            home.UserId = user.Id;
-
-            if (home.UserId != user.Id) 
+            if (user == null)
             {
-                return Forbid(); 
+                return Challenge();
             }
+
+            if (home.UserId != user.Id)
+            {
+                return Forbid();
+            }
+
+            ModelState.Remove("User");
+            ModelState.Remove("Appliances");
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(home);
+                    var homeToUpdate = await _context.Homes.FirstOrDefaultAsync(h => h.HomeId == id && h.UserId == user.Id);
+                    if (homeToUpdate == null)
+                    {
+                        return NotFound();
+                    }
+
+                    homeToUpdate.HouseName = home.HouseName;
+                    homeToUpdate.Size = home.Size;
+                    homeToUpdate.HeatingType = home.HeatingType;
+                    homeToUpdate.Location = home.Location;
+                    homeToUpdate.Address = home.Address;
+                    homeToUpdate.BuildingType = home.BuildingType;
+                    homeToUpdate.InsulationLevel = home.InsulationLevel;
+                    homeToUpdate.YearBuilt = home.YearBuilt;
+                    homeToUpdate.Description = home.Description;
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -167,15 +174,9 @@ namespace EffiSense.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewData["UserId"] = home.UserId;
             return View(home);
         }
 
-
-
-
-        // GET: Homes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -183,75 +184,70 @@ namespace EffiSense.Controllers
                 return NotFound();
             }
 
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
             var home = await _context.Homes
-                .Include(h => h.User)
-                .FirstOrDefaultAsync(m => m.HomeId == id);
+                .FirstOrDefaultAsync(m => m.HomeId == id && m.UserId == user.Id);
+
             if (home == null)
             {
                 return NotFound();
             }
 
-            var user = await _userManager.GetUserAsync(User);
-            if (home.UserId != user.Id) 
-            {
-                return Forbid();
-            }
-
             return View(home);
         }
-
-
-
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var home = await _context.Homes.FindAsync(id);
-            if (home != null)
-            {
-                var user = await _userManager.GetUserAsync(User);
-
-                if (home.UserId != user.Id)
-                {
-                    return Forbid();
-                }
-
-                var appliances = _context.Appliances.Where(a => a.HomeId == id).ToList();
-                foreach (var appliance in appliances)
-                {
-                    var usages = _context.Usages.Where(u => u.ApplianceId == appliance.ApplianceId);
-                    _context.Usages.RemoveRange(usages);
-
-                    _context.Appliances.Remove(appliance);
-                }
-
-                _context.Homes.Remove(home);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> ToggleSimulation(bool enable, int interval)
-        {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return Unauthorized();
+                return Challenge();
             }
 
-            using var scope = _context;
+            var home = await _context.Homes.FirstOrDefaultAsync(h => h.HomeId == id && h.UserId == user.Id);
+            if (home != null)
+            {
+                var applianceIds = await _context.Appliances
+                                               .Where(a => a.HomeId == id)
+                                               .Select(a => a.ApplianceId)
+                                               .ToListAsync();
 
-            user.IsSimulationEnabled = enable;
-            user.SelectedSimulationInterval = interval;
+                if (applianceIds.Any())
+                {
+                    var usages = await _context.Usages
+                                           .Where(u => applianceIds.Contains(u.ApplianceId) && u.UserId == user.Id)
+                                           .ToListAsync();
+                    if (usages.Any())
+                    {
+                        _context.Usages.RemoveRange(usages);
+                    }
 
-            await _context.SaveChangesAsync();
+                    var appliances = await _context.Appliances
+                                               .Where(a => applianceIds.Contains(a.ApplianceId))
+                                               .ToListAsync();
+                    if (appliances.Any())
+                    {
+                        _context.Appliances.RemoveRange(appliances);
+                    }
+                }
 
-            return Json(new { success = true, message = enable ? "Simulation started." : "Simulation stopped." });
+                _context.Homes.Remove(home);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction(nameof(Index));
         }
-
 
         private bool HomeExists(int id)
         {

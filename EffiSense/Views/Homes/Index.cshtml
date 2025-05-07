@@ -1,39 +1,101 @@
 ﻿@model IEnumerable<Home>
 
+@{
+    ViewData["Title"] = "My Homes";
+}
+
 <div class="container">
     <h1 class="text-center">@ViewData["Title"]</h1>
-
     <p class="text-center my-4">
-        <a asp-action="Create" class="btn btn-lg btn-primary shadow-sm">+ Create New</a>
+        <a asp-action="Create" class="btn btn-lg btn-primary shadow-sm">+ Add New Home</a>
     </p>
 
-    <div class="masonry-grid-container g-4">
+    <div class="masonry-grid-container">
         @foreach (var item in Model)
         {
-                <div class="card border-0 shadow">
-                    <div class="card-body">
-                        <h3 class="card-title text-dark">@item.HouseName</h3>
-                        <ul class="list-unstyled mt-3 mb-4">
-                            <li><strong>Size:</strong> @item.Size sq. m</li>
-                            <li><strong>Heating Type:</strong> @item.HeatingType</li>
-                            <li><strong>Location:</strong> @item.Location</li>
-                            <li><strong>Address:</strong> @item.Address</li>
-                            <li><strong>Building Type:</strong> @item.BuildingType</li>
-                            <li><strong>Insulation Level:</strong> @item.InsulationLevel</li>
-                        </ul>
-                        <div class="row g-2">
-                            <div class="col-4">
-                                <a asp-action="Edit" asp-route-id="@item.HomeId" class="btn btn-warning btn-lg w-100">Edit</a>
+            <div class="card shadow">
+                <div class="card-body">
+
+                    <div class="card-top-right-details">
+                        @if (!string.IsNullOrEmpty(item.HeatingType))
+                        {
+                            <span class="card-efficiency-badge" title="Heating Type">
+                                <i class="fas fa-fire me-1"></i>@item.HeatingType
+                            </span>
+                        }
+                        @if (!string.IsNullOrEmpty(item.InsulationLevel))
+                        {
+                            <span class="card-efficiency-badge" title="Insulation Level">
+                                <i class="fas fa-shield-alt me-1"></i>@item.InsulationLevel
+                            </span>
+                        }
+                        @if (item.YearBuilt.HasValue)
+                        {
+                            <div class="card-purchase-info" title="Year Built">Built: @item.YearBuilt.Value</div>
+                        }
+                    </div>
+
+                    <div class="card-header-flex">
+                        <div class="card-icon-container">
+                            @if (!string.IsNullOrEmpty(item.BuildingType) && item.BuildingType.Contains("Apartment"))
+                            {
+                                <i class="fas fa-building card-icon"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-home card-icon"></i> 
+                            }
+                        </div>
+                        <div class="card-title-section">
+                            <div class="card-title-brand-group">
+                                <h5 class="card-main-title">@Html.DisplayFor(modelItem => item.HouseName)</h5>
+                                @if (!string.IsNullOrEmpty(item.BuildingType))
+                                {
+                                    <span class="card-brand-separator"></span>
+                                    <span class="card-brand-text">@Html.DisplayFor(modelItem => item.BuildingType)</span>
+                                }
                             </div>
-                            <div class="col-4">
-                                <a asp-action="Details" asp-route-id="@item.HomeId" class="btn btn-info btn-lg w-100">Details</a>
-                            </div>
-                            <div class="col-4">
-                                <a asp-action="Delete" asp-route-id="@item.HomeId" class="btn btn-danger btn-lg w-100">Delete</a>
+                            <div class="card-location-address small text-muted-themed">
+                                @if (!string.IsNullOrEmpty(item.Location))
+                                {
+                                    <span title="Location"><i class="fas fa-map-marker-alt me-1"></i>@Html.DisplayFor(modelItem => item.Location)</span>
+                                }
+                                @if (!string.IsNullOrEmpty(item.Location) && !string.IsNullOrEmpty(item.Address))
+                                {
+                                    <span class="mx-1">·</span> 
+                                }
+                                @if (!string.IsNullOrEmpty(item.Address))
+                                {
+                                    <span title="Address"><i class="fas fa-envelope me-1"></i>@Html.DisplayFor(modelItem => item.Address)</span>
+                                }
                             </div>
                         </div>
                     </div>
+
+                    <div class="card-power-details">
+                        <span class="card-power-value">@Html.DisplayFor(modelItem => item.Size)</span>
+                        <span class="card-power-label">sq. m</span>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(item.Description))
+                    {
+                        <p class="card-note-text">@Html.DisplayFor(modelItem => item.Description)</p>
+                    }
+
+                    <div class="actions-row row g-2">
+                        <div class="col">
+                            <a asp-action="Edit" asp-route-id="@item.HomeId" class="btn btn-sm btn-warning w-100">Edit</a>
+                        </div>
+                        <div class="col">
+                            <a asp-action="Details" asp-route-id="@item.HomeId" class="btn btn-sm btn-info w-100">Details</a>
+                        </div>
+                        <div class="col">
+                            <a asp-action="Delete" asp-route-id="@item.HomeId" class="btn btn-sm btn-danger w-100">Delete</a>
+                        </div>
+                    </div>
+
                 </div>
+            </div>
         }
     </div>
 </div>

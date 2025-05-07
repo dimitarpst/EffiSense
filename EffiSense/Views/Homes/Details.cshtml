@@ -4,40 +4,65 @@
     ViewData["Title"] = "Home Details";
 }
 
-<div class="container py-5">
-    <h1 class="text-center mb-4">@ViewData["Title"]</h1>
-
-    <div class="card shadow-lg border-0">
-        <div class="card-body">
-            <h3 class="card-title text-dark">Home Details</h3>
-            <hr />
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                    <strong>House Name:</strong> @Html.DisplayFor(model => model.HouseName)
-                </li>
-                <li class="list-group-item">
-                    <strong>Size (sq. m):</strong> @Html.DisplayFor(model => model.Size)
-                </li>
-                <li class="list-group-item">
-                    <strong>Heating Type:</strong> @Html.DisplayFor(model => model.HeatingType)
-                </li>
-                <li class="list-group-item">
-                    <strong>Location:</strong> @Html.DisplayFor(model => model.Location)
-                </li>
-                <li class="list-group-item">
-                    <strong>Address:</strong> @Html.DisplayFor(model => model.Address)
-                </li>
-                <li class="list-group-item">
-                    <strong>Building Type:</strong> @Html.DisplayFor(model => model.BuildingType)
-                </li>
-                <li class="list-group-item">
-                    <strong>Insulation Level:</strong> @Html.DisplayFor(model => model.InsulationLevel)
-                </li>
-            </ul>
+<div class="container mt-4">
+    <div class="card details-card shadow-sm">
+        <div class="card-header">
+            <h3 class="mb-0">@ViewData["Title"]</h3>
         </div>
-        <div class="card-footer text-center">
-            <a asp-action="Edit" asp-route-id="@Model?.HomeId" class="btn btn-warning btn-lg">Edit</a>
-            <a asp-action="Index" class="btn btn-secondary btn-lg ms-2">Back to List</a>
+        <div class="card-body">
+            <h4 class="card-title">@Html.DisplayFor(model => model.HouseName)</h4>
+            <hr />
+            <dl class="row">
+                <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.Size)</dt>
+                <dd class="col-sm-8 col-md-9">@Html.DisplayFor(model => model.Size) sq. m</dd>
+
+                @if (!string.IsNullOrEmpty(Model.HeatingType))
+                {
+                    <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.HeatingType)</dt>
+                    <dd class="col-sm-8 col-md-9">@Html.DisplayFor(model => model.HeatingType)</dd>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.Location))
+                {
+                    <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.Location)</dt>
+                    <dd class="col-sm-8 col-md-9">@Html.DisplayFor(model => model.Location)</dd>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.Address))
+                {
+                    <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.Address)</dt>
+                    <dd class="col-sm-8 col-md-9">@Html.DisplayFor(model => model.Address)</dd>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.BuildingType))
+                {
+                    <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.BuildingType)</dt>
+                    <dd class="col-sm-8 col-md-9">@Html.DisplayFor(model => model.BuildingType)</dd>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.InsulationLevel))
+                {
+                    <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.InsulationLevel)</dt>
+                    <dd class="col-sm-8 col-md-9">@Html.DisplayFor(model => model.InsulationLevel)</dd>
+                }
+
+                @if (Model.YearBuilt.HasValue)
+                {
+                    <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.YearBuilt)</dt>
+                    <dd class="col-sm-8 col-md-9">@Html.DisplayFor(model => model.YearBuilt)</dd>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.Description)</dt>
+                    <dd class="col-sm-8 col-md-9" style="white-space: pre-wrap;">@Html.DisplayFor(model => model.Description)</dd>
+                }
+
+            </dl>
+        </div>
+        <div class="card-footer text-muted">
+            <a asp-action="Edit" asp-route-id="@Model.HomeId" class="btn btn-warning">Edit</a>
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
         </div>
     </div>
 </div>

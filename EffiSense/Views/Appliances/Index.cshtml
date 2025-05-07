@@ -1,5 +1,4 @@
-﻿@* EffiSense/Views/Appliances/Index.cshtml *@
-@model IEnumerable<Appliance>
+﻿@model IEnumerable<Appliance>
 
 @{
     ViewData["Title"] = "My Appliances";
@@ -17,7 +16,6 @@
             <div class="card shadow">
                 <div class="card-body">
 
-                    @* Top right info (Efficiency & Purchase Date) *@
                     <div class="card-top-right-details">
                         @if (!string.IsNullOrEmpty(item.EfficiencyRating))
                         {
@@ -29,7 +27,6 @@
                         }
                     </div>
 
-                    @* Header Section: Icon aligned with (Name | Brand) AND Home Name *@
                     <div class="card-header-flex">
                         <div class="card-icon-container">
                             @if (!string.IsNullOrEmpty(item.IconClass))
@@ -38,7 +35,7 @@
                             }
                             else
                             {
-                                <i class="fas fa-plug card-icon"></i> @* Default icon *@
+                                <i class="fas fa-plug card-icon"></i> 
                             }
                         </div>
                         <div class="card-title-section">
@@ -57,24 +54,16 @@
                         </div>
                     </div>
 
-                    @* Prominent Power Rating *@
                     <div class="card-power-details">
                         <span class="card-power-value">@Html.DisplayFor(modelItem => item.PowerRating)</span>
                         <span class="card-power-label">Power Rating</span>
                     </div>
 
-                    @* Notes/Description - This is key for varying height *@
                     @if (!string.IsNullOrEmpty(item.Notes))
                     {
                         <p class="card-note-text">@Html.DisplayFor(modelItem => item.Notes)</p>
                     }
-                    else
-                    {
-                        @* Ensures space is taken for flex-grow to work if notes are empty, can be styled with min-height in CSS *@
-                        <div class="card-note-text-spacer"></div>
-                    }
 
-                    @* Action Buttons *@
                     <div class="actions-row row g-2">
                         <div class="col">
                             <a asp-action="Edit" asp-route-id="@item.ApplianceId" class="btn btn-sm btn-warning w-100">Edit</a>

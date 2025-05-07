@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using OpenAI_API;
 using OpenAI_API.Chat;
 
-
 namespace EffiSense.Controllers
 {
     [Authorize]
@@ -22,12 +21,14 @@ namespace EffiSense.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly IHubContext<UsageHub> _hubContext;
 
-        public UsagesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IConfiguration configuration)
+        public UsagesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IConfiguration configuration, IHubContext<UsageHub> hubContext)
         {
             _context = context;
             _userManager = userManager;
             _configuration = configuration;
+            _hubContext = hubContext;
         }
 
         private async Task<string> GetEnergyEfficiencyTips(string prompt)
@@ -35,403 +36,280 @@ namespace EffiSense.Controllers
             try
             {
                 var apiKey = _configuration["OpenAI:ApiKey"];
+                if (string.IsNullOrEmpty(apiKey)) { return "Error: OpenAI API Key is not configured."; }
                 var openAiApi = new OpenAIAPI(apiKey);
-
                 var chatRequest = new ChatRequest
                 {
                     Model = "gpt-3.5-turbo",
-                    Messages = new[]
-                    {
-                new ChatMessage(ChatMessageRole.System, "You are an assistant that provides energy-efficiency tips. Your clients are European and use EU standards for measuring energy usage, as well as Celsius instead of Fahrenheit. Do not answer any questions that do not regard energy-efficiency. Try to use the data provided about specific appliances as much as possible. When outputing, DO NOT bold text and DO NOT use lists!"),
-                new ChatMessage(ChatMessageRole.User, prompt)
-            },
+                    Messages = new[] {
+                        new ChatMessage(ChatMessageRole.System, "You are an assistant that provides energy-efficiency tips. Your clients are European and use EU standards for measuring energy usage, as well as Celsius instead of Fahrenheit. Do not answer any questions that do not regard energy-efficiency. Try to use the data provided about specific appliances as much as possible. When outputing, DO NOT bold text and DO NOT use lists!"),
+                        new ChatMessage(ChatMessageRole.User, prompt)
+                    },
                     MaxTokens = 300
                 };
-
                 var chatResult = await openAiApi.Chat.CreateChatCompletionAsync(chatRequest);
-                return chatResult.Choices[0].Message.TextContent;//.Trim();
+                if (chatResult?.Choices?.Count > 0 && chatResult.Choices[0].Message?.TextContent != null) { return chatResult.Choices[0].Message.TextContent; }
+                else { return "Sorry, I couldn't generate a tip right now."; }
             }
-            catch (Exception ex)
-            {
-                return $"Error retrieving tips: {ex.Message}";
-            }
+            catch (Exception ex) { return $"Error retrieving tips. Please check configuration or try again later."; }
         }
 
         [HttpPost]
         public async Task<IActionResult> GetDashboardSuggestion([FromBody] string userPrompt)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return Unauthorized(new { success = false, message = "User not authenticated." });
-            }
+            if (user == null) { return Unauthorized(new { success = false, message = "User not authenticated." }); }
+            if (string.IsNullOrWhiteSpace(userPrompt)) { return BadRequest(new { success = false, message = "Prompt cannot be empty." }); }
 
-            if (string.IsNullOrWhiteSpace(userPrompt))
-            {
-                return BadRequest(new { success = false, message = "Prompt cannot be empty." });
-            }
-
-            // 1. Save User's Message
-            var userMessageLog = new ChatMessageLog
-            {
-                UserId = user.Id,
-                MessageText = userPrompt,
-                Sender = MessageSender.User,
-                Timestamp = DateTime.UtcNow // Use UTC
-            };
+            var userMessageLog = new ChatMessageLog { UserId = user.Id, MessageText = userPrompt, Sender = MessageSender.User, Timestamp = DateTime.UtcNow };
             _context.ChatMessageLogs.Add(userMessageLog);
-            // Note: We'll call SaveChangesAsync once after getting the bot's response
 
-            // --- Existing logic to build context for OpenAI ---
             var appliancesList = await _context.Usages
-                .Include(u => u.Appliance)
-                .Where(u => u.UserId == user.Id)
-                .OrderByDescending(u => u.EnergyUsed) // Example: most used
-                .ThenByDescending(u => u.UsageFrequency)
-                .Take(3) // Limit for prompt conciseness
-                .ToListAsync();
-
+                .Where(u => u.UserId == user.Id && u.Appliance != null)
+                .OrderByDescending(u => u.EnergyUsed).ThenByDescending(u => u.UsageFrequency)
+                .Select(u => new { u.Appliance.Name, u.Appliance.PowerRating, u.EnergyUsed }).Take(3).ToListAsync();
             var homesList = await _context.Homes
                 .Where(h => h.UserId == user.Id)
-                .Take(2) // Limit for prompt conciseness
-                .ToListAsync();
+                .Select(h => new { h.BuildingType, h.HouseName, h.Size, h.InsulationLevel, h.HeatingType }).Take(2).ToListAsync();
 
             string homeDetails = "My home setup: ";
-            if (homesList.Any())
-            {
-                homeDetails += string.Join("; ", homesList.Select(h =>
-                    $"a {h.BuildingType} ('{h.HouseName}') of {h.Size}m^2, insulation: {h.InsulationLevel}, heating: {h.HeatingType}"));
-            }
-            else
-            {
-                homeDetails += " general household.";
-            }
-
+            homeDetails += homesList.Any() ? string.Join("; ", homesList.Select(h => $"a {h.BuildingType} ('{h.HouseName}') of {h.Size}m^2, insulation: {h.InsulationLevel}, heating: {h.HeatingType}")) : " general household.";
             string applianceDetails = " Key appliances by usage: ";
-            if (appliancesList.Any())
-            {
-                applianceDetails += string.Join("; ", appliancesList.Select(a =>
-                    $"{a.Appliance.Name} ({a.Appliance.PowerRating}, used {a.EnergyUsed} kWh)"));
-            }
-            else
-            {
-                applianceDetails += " no specific appliance data to share for this query.";
-            }
-            // --- End of context building ---
-
+            applianceDetails += appliancesList.Any() ? string.Join("; ", appliancesList.Select(a => $"{a.Name} ({a.PowerRating}, used {a.EnergyUsed} kWh)")) : " no specific appliance data to share for this query.";
             string finalAiPrompt = $"Context: {homeDetails}. {applianceDetails}. My question is: {userPrompt}";
 
-            var botSuggestion = await GetEnergyEfficiencyTips(finalAiPrompt); // Your existing method
-
-            // 2. Save Bot's Response
-            var botMessageLog = new ChatMessageLog
-            {
-                UserId = user.Id,
-                MessageText = botSuggestion,
-                Sender = MessageSender.Bot,
-                Timestamp = DateTime.UtcNow.AddMilliseconds(1) // Ensure it's after the user's message
-            };
+            var botSuggestion = await GetEnergyEfficiencyTips(finalAiPrompt);
+            var botMessageLog = new ChatMessageLog { UserId = user.Id, MessageText = botSuggestion, Sender = MessageSender.Bot, Timestamp = DateTime.UtcNow.AddMilliseconds(1) };
             _context.ChatMessageLogs.Add(botMessageLog);
 
-            try
-            {
-                await _context.SaveChangesAsync(); // Save both user and bot messages
-            }
-            catch (Exception ex)
-            {
-                // Log the exception (ex)
-                return Json(new { success = false, message = "Error saving chat messages." });
-            }
+            try { await _context.SaveChangesAsync(); }
+            catch (Exception ex) { return Json(new { success = false, message = "Error saving chat messages." }); }
 
             return Json(new { success = true, suggestion = botSuggestion });
         }
 
-        // New Action to retrieve chat history
         [HttpGet]
         public async Task<IActionResult> GetChatHistory()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return Unauthorized();
-            }
-
+            if (user == null) return Unauthorized();
             var history = await _context.ChatMessageLogs
-                .Where(m => m.UserId == user.Id)
-                .OrderBy(m => m.Timestamp) // Get messages in chronological order
-                .Take(50) // Or however many you want to load initially
-                .Select(m => new {
-                    text = m.MessageText,
-                    senderType = m.Sender.ToString().ToLower() // "user" or "bot" for JS
-                })
-                .ToListAsync();
-
+                .Where(m => m.UserId == user.Id).OrderBy(m => m.Timestamp).Take(50)
+                .Select(m => new { text = m.MessageText, senderType = m.Sender.ToString().ToLower() }).ToListAsync();
             return Json(history);
         }
 
-
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string dateFilter = null)
         {
             ViewData["Title"] = "Usages";
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            var applicationDbContext = _context.Usages
-                .Where(u => u.UserId == user.Id)
+            // Start query, filter by user first
+            IQueryable<Usage> usagesQuery = _context.Usages.Where(u => u.UserId == user.Id);
+
+            // Apply date filter if provided
+            if (!string.IsNullOrEmpty(dateFilter) && DateTime.TryParse(dateFilter, out DateTime parsedDate))
+            {
+                usagesQuery = usagesQuery.Where(u => u.Date.Date == parsedDate.Date);
+                ViewBag.CurrentFilter = dateFilter;
+            }
+
+            // Add Includes *after* primary filtering
+            var model = await usagesQuery
                 .Include(u => u.Appliance)
-                .ThenInclude(a => a.Home) 
-                .Include(u => u.User);
+                    .ThenInclude(a => a.Home) // Include Home via Appliance
+                .OrderByDescending(u => u.Date)
+                .ThenByDescending(u => u.Time)
+                .ToListAsync();
 
-            return View(await applicationDbContext.ToListAsync());
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_UsagesGridPartial", model);
+            }
+
+            return View(model);
         }
 
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
             var usage = await _context.Usages
-                .Include(u => u.Appliance)
-                .ThenInclude(a => a.Home) 
-                .Include(u => u.User)
-                .FirstOrDefaultAsync(m => m.UsageId == id);
+                .Include(u => u.Appliance).ThenInclude(a => a.Home)
+                .FirstOrDefaultAsync(m => m.UsageId == id && m.UserId == user.Id);
 
-            var user = await _userManager.GetUserAsync(User);
-            if (usage == null || usage.UserId != user.Id)
-            {
-                return Forbid();
-            }
-
+            if (usage == null) return NotFound();
             return View(usage);
         }
 
-
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var user = _userManager.GetUserAsync(User).Result;
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName");
+            ViewData["ApplianceId"] = new SelectList(
+                _context.Appliances.Where(a => a.Home.UserId == user.Id).Include(a => a.Home).OrderBy(a => a.Home.HouseName).ThenBy(a => a.Name),
+                "ApplianceId", "Name", null, "Home.HouseName");
 
-            ViewData["ApplianceId"] = new SelectList(Enumerable.Empty<SelectListItem>());
-            ViewData["UsageFrequencyOptions"] = new Dictionary<int, string>
-                {
-                    { 1, "Rarely" },
-                    { 2, "Sometimes" },
-                    { 3, "Often" },
-                    { 4, "Very Often" },
-                    { 5, "Always" }
-                };
-
-            var usage = new Usage
-            {
-                Date = DateTime.Now.Date,
-                Time = DateTime.Now
-            };
-
-            return View();
+            var usage = new Usage { Date = DateTime.Now.Date, Time = DateTime.Now };
+            return View(usage);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency")] Usage usage)
+        public async Task<IActionResult> Create(
+            [Bind("ApplianceId,Date,Time,EnergyUsed,UsageFrequency,ContextNotes,IconClass")] Usage usage)
         {
-            ModelState.Remove("User");
-            ModelState.Remove("Appliance");
-            ModelState.Remove("UserId");
-
             var user = await _userManager.GetUserAsync(User);
-            var appliance = await _context.Appliances
-                .Include(a => a.Home)
-                .FirstOrDefaultAsync(a => a.ApplianceId == usage.ApplianceId);
-
-            if (appliance == null || appliance.Home.UserId != user.Id)
-            {
-                return Forbid();
-            }
+            if (user == null) return Challenge();
 
             usage.UserId = user.Id;
             usage.Date = usage.Date.Date.Add(usage.Time.TimeOfDay);
 
+            ModelState.Remove("User");
+            ModelState.Remove("Appliance");
+
+            var appliance = await _context.Appliances
+                .Include(a => a.Home)
+                .FirstOrDefaultAsync(a => a.ApplianceId == usage.ApplianceId && a.Home.UserId == user.Id);
+
+            if (appliance == null) { ModelState.AddModelError("ApplianceId", "Invalid appliance selection."); }
+
             if (ModelState.IsValid)
             {
+                // Assign appliance's icon class to usage if usage doesn't have one specified
+                if (string.IsNullOrEmpty(usage.IconClass) && appliance != null)
+                {
+                    usage.IconClass = appliance.IconClass;
+                }
+
                 _context.Add(usage);
                 await _context.SaveChangesAsync();
 
-                // ✅ Inject SignalR Hub Context
-                var hubContext = HttpContext.RequestServices.GetRequiredService<IHubContext<UsageHub>>();
-                await hubContext.Clients.All.SendAsync("ReceiveUsageUpdate", new
+                await _hubContext.Clients.All.SendAsync("ReceiveUsageUpdate", new
                 {
-                    UsageId = usage.UsageId,
-                    ApplianceName = appliance.Name,
-                    HomeName = appliance.Home.HouseName,
-                    Date = usage.Date.ToString("yyyy-MM-dd"),
-                    EnergyUsed = usage.EnergyUsed,
-                    UsageFrequency = usage.UsageFrequency
+                    usage.UsageId,
+                    ApplianceName = appliance?.Name ?? "N/A",
+                    HomeName = appliance?.Home?.HouseName ?? "N/A",
+                    Date = usage.Date.ToString("yyyy-MM-dd HH:mm"),
+                    usage.EnergyUsed,
+                    usage.UsageFrequency,
+                    usage.ContextNotes,
+                    IconClass = usage.IconClass // Send the potentially updated IconClass
                 });
-
 
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["UserId"] = usage.UserId;
-            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName");
-
-            ViewData["ApplianceId"] = new SelectList(_context.Appliances.Where(a => a.Home.UserId == user.Id), "ApplianceId", "Name", usage.ApplianceId);
-            ViewData["UsageFrequencyOptions"] = new Dictionary<int, string>
-                {
-                    { 1, "Rarely" },
-                    { 2, "Sometimes" },
-                    { 3, "Often" },
-                    { 4, "Very Often" },
-                    { 5, "Always" }
-                };
+            ViewData["ApplianceId"] = new SelectList(
+                 _context.Appliances.Where(a => a.Home.UserId == user.Id).Include(a => a.Home).OrderBy(a => a.Home.HouseName).ThenBy(a => a.Name),
+                "ApplianceId", "Name", usage.ApplianceId, "Home.HouseName");
             return View(usage);
         }
 
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
             var usage = await _context.Usages
-                .Include(u => u.Appliance)
-                .ThenInclude(a => a.Home)
-                .FirstOrDefaultAsync(u => u.UsageId == id);
+                .Include(u => u.Appliance).ThenInclude(a => a.Home)
+                .FirstOrDefaultAsync(u => u.UsageId == id && u.UserId == user.Id);
 
-            if (usage == null)
-            {
-                return NotFound();
-            }
+            if (usage == null) return NotFound();
 
-            var user = await _userManager.GetUserAsync(User);
-            if (usage.UserId != user.Id)
-            {
-                return Forbid();
-            }
+            ViewData["ApplianceId"] = new SelectList(
+                 _context.Appliances.Where(a => a.Home.UserId == user.Id).Include(a => a.Home).OrderBy(a => a.Home.HouseName).ThenBy(a => a.Name),
+                "ApplianceId", "Name", usage.ApplianceId, "Home.HouseName");
 
-            ViewData["SelectedHomeId"] = usage.Appliance.HomeId;
-            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName", usage.Appliance.HomeId);
-            ViewData["SelectedApplianceId"] = usage.ApplianceId;
-            ViewData["UsageFrequencyOptions"] = new Dictionary<int, string>
-                {
-                    { 1, "Rarely" },
-                    { 2, "Sometimes" },
-                    { 3, "Often" },
-                    { 4, "Very Often" },
-                    { 5, "Always" }
-                };
+            usage.Time = DateTime.MinValue.Add(usage.Date.TimeOfDay);
             return View(usage);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UsageId, UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency")] Usage usage)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("UsageId,UserId,ApplianceId,Date,Time,EnergyUsed,UsageFrequency,ContextNotes,IconClass")] Usage usage)
         {
+            if (id != usage.UsageId) return NotFound();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+            if (usage.UserId != user.Id) return Forbid();
+
+            usage.Date = usage.Date.Date.Add(usage.Time.TimeOfDay);
+
             ModelState.Remove("User");
             ModelState.Remove("Appliance");
-            ModelState.Remove("UserId");
-
-            if (id != usage.UsageId)
-            {
-                return NotFound();
-            }
 
             var appliance = await _context.Appliances
                 .Include(a => a.Home)
-                .FirstOrDefaultAsync(a => a.ApplianceId == usage.ApplianceId);
+                .FirstOrDefaultAsync(a => a.ApplianceId == usage.ApplianceId && a.Home.UserId == user.Id);
 
-            var user = await _userManager.GetUserAsync(User);
-            usage.UserId = user.Id;
-
-            if (usage.UserId != user.Id || appliance?.Home.UserId != user.Id)
-            {
-                return Forbid();
-            }
-
-            usage.Date = usage.Date.Date.Add(usage.Time.TimeOfDay); 
+            if (appliance == null) { ModelState.AddModelError("ApplianceId", "Invalid appliance selection."); }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(usage);
+                    var usageToUpdate = await _context.Usages.FirstOrDefaultAsync(u => u.UsageId == id && u.UserId == user.Id);
+                    if (usageToUpdate == null) return NotFound();
+
+                    usageToUpdate.ApplianceId = usage.ApplianceId;
+                    usageToUpdate.Date = usage.Date;
+                    usageToUpdate.EnergyUsed = usage.EnergyUsed;
+                    usageToUpdate.UsageFrequency = usage.UsageFrequency;
+                    usageToUpdate.ContextNotes = usage.ContextNotes;
+                    usageToUpdate.IconClass = usage.IconClass;
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UsageExists(usage.UsageId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!UsageExists(usage.UsageId)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["UserId"] = usage.UserId;
-            ViewData["ApplianceId"] = new SelectList(_context.Appliances.Where(a => a.Home.UserId == user.Id), "ApplianceId", "Name", usage.ApplianceId);
-            ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName", usage.Appliance.HomeId);
-            ViewData["SelectedApplianceId"] = usage.ApplianceId;
-            ViewData["UsageFrequencyOptions"] = new Dictionary<int, string>
-                {
-                    { 1, "Rarely" },
-                    { 2, "Sometimes" },
-                    { 3, "Often" },
-                    { 4, "Very Often" },
-                    { 5, "Always" }
-                };
+            ViewData["ApplianceId"] = new SelectList(
+                 _context.Appliances.Where(a => a.Home.UserId == user.Id).Include(a => a.Home).OrderBy(a => a.Home.HouseName).ThenBy(a => a.Name),
+                "ApplianceId", "Name", usage.ApplianceId, "Home.HouseName");
             return View(usage);
         }
 
-
-
-        // GET: Usages/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
             var usage = await _context.Usages
-                .Include(u => u.Appliance)
-                .Include(u => u.User)
-                .FirstOrDefaultAsync(m => m.UsageId == id);
+                .Include(u => u.Appliance).ThenInclude(a => a.Home)
+                .FirstOrDefaultAsync(m => m.UsageId == id && m.UserId == user.Id);
 
-            var user = await _userManager.GetUserAsync(User);
-            if (usage == null || usage.UserId != user.Id)
-            {
-                return NotFound();
-            }
-
+            if (usage == null) return NotFound();
             return View(usage);
         }
 
-        // POST: Usages/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var usage = await _context.Usages.FindAsync(id);
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            var usage = await _context.Usages.FirstOrDefaultAsync(u => u.UsageId == id && u.UserId == user.Id);
             if (usage != null)
             {
-                var user = await _userManager.GetUserAsync(User);
-                if (usage.UserId != user.Id)
-                {
-                    return Forbid(); 
-                }
-
                 _context.Usages.Remove(usage);
+                await _context.SaveChangesAsync();
             }
+            else { return NotFound(); }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
@@ -439,50 +317,36 @@ namespace EffiSense.Controllers
         public async Task<IActionResult> GetAppliancesByHome(int homeId)
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+            var homeExists = await _context.Homes.AnyAsync(h => h.HomeId == homeId && h.UserId == user.Id);
+            if (!homeExists) return Forbid();
 
             var appliances = await _context.Appliances
-                .Where(a => a.HomeId == homeId && a.Home.UserId == user.Id)
-                .Select(a => new
-                {
-                    a.ApplianceId,
-                    a.Name
-                })
-                .ToListAsync();
-
+                .Where(a => a.HomeId == homeId)
+                .Select(a => new { a.ApplianceId, a.Name })
+                .OrderBy(a => a.Name).ToListAsync();
             return Json(appliances);
         }
+
         [HttpGet]
-        public async Task<IActionResult> FilterByDate(string date)
+        public async Task<IActionResult> FilterByDate(string dateFilter)
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            var usagesQuery = _context.Usages
-                .Include(u => u.Appliance)
-                .ThenInclude(a => a.Home)
-                .Where(u => u.UserId == user.Id);
+            IQueryable<Usage> usagesQuery = _context.Usages.Where(u => u.UserId == user.Id);
 
-            if (!string.IsNullOrEmpty(date))
+            if (!string.IsNullOrEmpty(dateFilter) && DateTime.TryParse(dateFilter, out DateTime parsedDate))
             {
-                if (DateTime.TryParse(date, out DateTime parsedDate))
-                {
-                    usagesQuery = usagesQuery.Where(u => u.Date.Date == parsedDate.Date);
-                    Console.WriteLine($"Filtering by date: {parsedDate.ToShortDateString()}");
-                }
-                else
-                {
-                    Console.WriteLine($"Invalid date format: {date}");
-                    return BadRequest("Invalid date format.");
-                }
+                usagesQuery = usagesQuery.Where(u => u.Date.Date == parsedDate.Date);
             }
 
+            var filteredUsages = await usagesQuery
+                .Include(u => u.Appliance).ThenInclude(a => a.Home)
+                .OrderByDescending(u => u.Date).ThenByDescending(u => u.Time)
+                .ToListAsync();
 
-            var filteredUsages = await usagesQuery.ToListAsync();
-            if (filteredUsages == null || !filteredUsages.Any())
-            {
-                return PartialView("~/Views/Shared/_UpdateTableRows.cshtml", filteredUsages);
-            }
-            return PartialView("~/Views/Shared/_UpdateTableRows.cshtml", filteredUsages);
-
+            return PartialView("_UsagesGridPartial", filteredUsages);
         }
 
         private bool UsageExists(int id)

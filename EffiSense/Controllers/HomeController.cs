@@ -331,7 +331,7 @@ namespace EffiSense.Controllers
                     ApplianceId = appliance.ApplianceId,
                     Date = DateTime.Now.AddDays(-random.Next(1, 30)),
                     Time = DateTime.Now.AddHours(-random.Next(1, 24)),
-                    EnergyUsed = Math.Round(random.NextDouble() * 5, 2),
+                    EnergyUsed = (decimal)Math.Round(random.NextDouble() * 5, 2),
                     UsageFrequency = random.Next(1, 6)
                 });
             }

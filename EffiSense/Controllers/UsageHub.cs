@@ -5,20 +5,20 @@ namespace EffiSense.Controllers
 {
     public class UsageHub : Hub
     {
-        public async Task SendUsageUpdate(int usageId, string applianceName, string homeName, string date, double energyUsed, int usageFrequency)
+        public override Task OnConnectedAsync()
         {
-            var usageData = new
-            {
-                UsageId = usageId,
-                ApplianceName = applianceName,
-                HomeName = homeName,
-                Date = date,
-                EnergyUsed = energyUsed,
-                UsageFrequency = usageFrequency
-            };
+            Console.WriteLine($"🔌 Client connected: {Context.ConnectionId}");
+            return base.OnConnectedAsync();
+        }
 
-            Console.WriteLine($"📡 SignalR: Sending update for UsageId {usageId}");
-            await Clients.All.SendAsync("ReceiveUsageUpdate", usageData);
+        public override Task OnDisconnectedAsync(Exception? exception)
+        {
+            Console.WriteLine($"🔌 Client disconnected: {Context.ConnectionId}");
+            if (exception != null)
+            {
+                Console.WriteLine($"   Reason: {exception.Message}");
+            }
+            return base.OnDisconnectedAsync(exception);
         }
     }
 }

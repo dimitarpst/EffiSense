@@ -1,48 +1,83 @@
 ﻿@model Usage
 
 @{
-    ViewData["Title"] = "Delete Usage";
-    var usageFrequencyMap = new Dictionary<int, string>
+    ViewData["Title"] = "Delete Usage Log";
+    Func<int, string> GetFrequencyText = (freq) =>
     {
-        { 1, "Rarely" },
-        { 2, "Sometimes" },
-        { 3, "Often" },
-        { 4, "Very Often" },
-        { 5, "Always" }
+        return freq switch
+        {
+            1 => "Rarely",
+            2 => "Sometimes",
+            3 => "Often",
+            4 => "Very Often",
+            5 => "Always",
+            _ => "N/A"
+        };
     };
 }
 
-<div class="container py-5">
-    <h1 class="text-center text-danger mb-4">@ViewData["Title"]</h1>
-
-    <div class="card shadow-lg border-0">
-        <div class="card-body">
-            <h3 class="card-title text-dark">Are you sure you want to delete this usage?</h3>
-            <hr />
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                    <strong>House Name:</strong> @Html.DisplayFor(model => model.Appliance.Home.HouseName)
-                </li>
-                <li class="list-group-item">
-                    <strong>Appliance Name:</strong> @Html.DisplayFor(model => model.Appliance.Name)
-                </li>
-                <li class="list-group-item">
-                    <strong>Date:</strong> @Html.DisplayFor(model => model.Date)
-                </li>
-                <li class="list-group-item">
-                    <strong>Energy Used (kWh):</strong> @Html.DisplayFor(model => model.EnergyUsed)
-                </li>
-                <li class="list-group-item">
-                    <strong>Usage Frequency:</strong> @(usageFrequencyMap.ContainsKey(Model.UsageFrequency) ? usageFrequencyMap[Model.UsageFrequency] : "Unknown")
-                </li>
-            </ul>
+<div class="container mt-4">
+    <div class="card details-card shadow-sm border-danger">
+        <div class="card-header bg-danger text-white">
+            <h3 class="mb-0">@ViewData["Title"]</h3>
         </div>
-        <div class="card-footer text-center">
-            <form asp-action="Delete" class="d-inline">
+        <div class="card-body">
+            <h4 class="text-danger">Are you sure you want to delete this usage log?</h4>
+            <h5 class="card-title">
+                @if (!string.IsNullOrEmpty(Model.Appliance?.IconClass))
+                {
+                    <i class="@Model.Appliance.IconClass me-2"></i>
+                }
+                else if (!string.IsNullOrEmpty(Model.IconClass))
+                {
+                    <i class="@Model.IconClass me-2"></i>
+                }
+                else
+                {
+                    <i class="fas fa-bolt me-2"></i>
+                }
+                Usage for @Model.Appliance?.Name on @Model.Date.ToString("dd MMM yyyy")
+            </h5>
+            <hr />
+            <dl class="row">
+                <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.Appliance)</dt>
+                <dd class="col-sm-8 col-md-9">@Model.Appliance?.Name (@Model.Appliance?.Home?.HouseName)</dd>
+
+                <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.Date)</dt>
+                <dd class="col-sm-8 col-md-9">@Model.Date.ToString("dd MMMM yyyy")</dd>
+
+                <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.Time)</dt>
+                <dd class="col-sm-8 col-md-9">@Model.Time.ToString("HH:mm")</dd>
+
+                <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.EnergyUsed)</dt>
+                <dd class="col-sm-8 col-md-9">@Html.DisplayFor(model => model.EnergyUsed) kWh</dd>
+
+                <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.UsageFrequency)</dt>
+                <dd class="col-sm-8 col-md-9">@GetFrequencyText(Model.UsageFrequency)</dd>
+
+                @* --- NEW FIELDS --- *@
+                @if (!string.IsNullOrEmpty(Model.ContextNotes))
+                {
+                    <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.ContextNotes)</dt>
+                    <dd class="col-sm-8 col-md-9" style="white-space: pre-wrap;">@Html.DisplayFor(model => model.ContextNotes)</dd>
+                }
+                @if (!string.IsNullOrEmpty(Model.IconClass))
+                {
+                    <dt class="col-sm-4 col-md-3">@Html.DisplayNameFor(model => model.IconClass)</dt>
+                    <dd class="col-sm-8 col-md-9">
+                        @Html.DisplayFor(model => model.IconClass) <i class="@Model.IconClass ms-2"></i>
+                    </dd>
+                }
+                @* --- END NEW FIELDS --- *@
+            </dl>
+
+            <form asp-action="Delete">
                 <input type="hidden" asp-for="UsageId" />
-                <button type="submit" class="btn btn-danger btn-lg">Delete</button>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-danger">Delete Log</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                </div>
             </form>
-            <a asp-action="Index" class="btn btn-secondary btn-lg ms-2">Cancel</a>
         </div>
     </div>
 </div>

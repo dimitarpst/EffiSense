@@ -1,4 +1,6 @@
 ﻿using EffiSense.Controllers;
+using EffiSense.Data;
+using EffiSense.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +20,12 @@ namespace EffiSense.Services
         private readonly ILogger<IoTUsageSimulator> _logger;
         private static readonly Random _random = new Random();
 
+        private static readonly string[] _contextExamples = new[] {
+            "Regular evening use", "Quick morning check", "Left on accidentally",
+            "Weekend binge watching", "Holiday cooking prep", "Running while away",
+            "Testing new settings", "Background process", null, null, null, null, null
+        };
+
         public IoTUsageSimulator(IServiceScopeFactory scopeFactory, IHubContext<UsageHub> hubContext, ILogger<IoTUsageSimulator> logger)
         {
             _scopeFactory = scopeFactory;
@@ -31,60 +39,94 @@ namespace EffiSense.Services
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                using var scope = _scopeFactory.CreateScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                var usersWithSimulation = await dbContext.Users
-                    .Where(u => u.IsSimulationEnabled)
-                    .ToListAsync();
-
-                foreach (var user in usersWithSimulation)
+                int calculatedIntervalSeconds = 5;
+                try
                 {
-                    var appliances = await dbContext.Appliances
-                        .Include(a => a.Home)
-                        .Where(a => a.Home.UserId == user.Id)
-                        .ToListAsync();
+                    using var scope = _scopeFactory.CreateScope();
+                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                    if (!appliances.Any()) continue;
+                    var usersWithSimulation = await dbContext.Users
+                        .Where(u => u.IsSimulationEnabled)
+                        .Select(u => new { u.Id, u.SelectedSimulationInterval })
+                        .ToListAsync(stoppingToken);
 
-                    var appliance = appliances[_random.Next(appliances.Count)];
-
-                    var usage = new Usage
+                    if (usersWithSimulation.Any())
                     {
-                        UserId = user.Id,
-                        ApplianceId = appliance.ApplianceId,
-                        Date = DateTime.Now,
-                        Time = DateTime.Now,
-                        EnergyUsed = Math.Round(_random.NextDouble() * 5, 2),
-                        UsageFrequency = _random.Next(1, 6)
-                    };
+                        foreach (var userSimInfo in usersWithSimulation)
+                        {
+                            try
+                            {
+                                var appliances = await dbContext.Appliances
+                                    .Include(a => a.Home)
+                                    .Where(a => a.Home.UserId == userSimInfo.Id)
+                                    .ToListAsync(stoppingToken);
 
-                    dbContext.Usages.Add(usage);
-                    await dbContext.SaveChangesAsync();
+                                if (!appliances.Any()) continue;
 
-                    await _hubContext.Clients.All.SendAsync("ReceiveUsageUpdate", new
+                                var appliance = appliances[_random.Next(appliances.Count)];
+
+                                DateTime now = DateTime.Now;
+                                DateTime usageTimestamp = now.Date.Add(now.TimeOfDay);
+
+                                var usage = new Usage
+                                {
+                                    UserId = userSimInfo.Id,
+                                    ApplianceId = appliance.ApplianceId,
+                                    Date = usageTimestamp,
+                                    Time = now, // Keep if needed, Date now holds combined
+                                    EnergyUsed = (decimal)Math.Round(_random.NextDouble() * 5, 2),
+                                    UsageFrequency = _random.Next(1, 6),
+                                    ContextNotes = _contextExamples[_random.Next(_contextExamples.Length)], // Assign random note
+                                    IconClass = appliance.IconClass // Assign icon from appliance
+                                };
+
+                                dbContext.Usages.Add(usage);
+                                await dbContext.SaveChangesAsync(stoppingToken);
+
+                                await _hubContext.Clients.All.SendAsync("ReceiveUsageUpdate", new
+                                {
+                                    UsageId = usage.UsageId,
+                                    ApplianceName = appliance.Name,
+                                    HomeName = appliance.Home?.HouseName ?? "N/A",
+                                    Date = usage.Date.ToString("yyyy-MM-dd HH:mm"),
+                                    EnergyUsed = usage.EnergyUsed,
+                                    UsageFrequency = usage.UsageFrequency,
+                                    ContextNotes = usage.ContextNotes, // Send new field
+                                    IconClass = usage.IconClass // Send new field
+                                }, stoppingToken);
+
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Error processing simulation for user {UserId}", userSimInfo.Id);
+                            }
+                        }
+
+                        calculatedIntervalSeconds = usersWithSimulation.Min(u => u.SelectedSimulationInterval);
+                        if (calculatedIntervalSeconds < 1) calculatedIntervalSeconds = 1;
+                    }
+                    else
                     {
-                        UsageId = usage.UsageId,
-                        ApplianceName = appliance.Name,
-                        HomeName = appliance.Home.HouseName,
-                        Date = usage.Date.ToString("yyyy-MM-dd"),
-                        EnergyUsed = usage.EnergyUsed,
-                        UsageFrequency = usage.UsageFrequency
-                    });
+                        calculatedIntervalSeconds = 5;
+                    }
+                }
+                catch (OperationCanceledException) { break; }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred in the IoT Usage Simulator loop.");
+                    calculatedIntervalSeconds = 60;
                 }
 
-                _logger.LogInformation($"⏳ Fetching interval for simulation...");
-
-                var minInterval = usersWithSimulation.Any()
-                    ? TimeSpan.FromSeconds(usersWithSimulation.Min(u => u.SelectedSimulationInterval))
-                    : TimeSpan.FromSeconds(5);
-
-
-                _logger.LogInformation($"⏳ Next usage in {minInterval.TotalSeconds} seconds...");
-                await Task.Delay(minInterval, stoppingToken);
-
+                try
+                {
+                    TimeSpan delay = TimeSpan.FromSeconds(calculatedIntervalSeconds);
+                    _logger.LogInformation("IoT Usage Simulator: Next check in {DelaySeconds} seconds.", delay.TotalSeconds);
+                    await Task.Delay(delay, stoppingToken);
+                }
+                catch (OperationCanceledException) { break; }
             }
-        }
 
+            _logger.LogInformation("IoT Usage Simulator Stopped.");
+        }
     }
 }

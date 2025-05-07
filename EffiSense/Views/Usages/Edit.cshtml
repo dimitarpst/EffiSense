@@ -1,105 +1,115 @@
 ﻿@model Usage
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Usage Log";
+    // Recreate helper here if needed
+    Func<int, string> GetFrequencyText = (freq) =>
+    {
+        return freq switch
+        {
+            1 => "Rarely",
+            2 => "Sometimes",
+            3 => "Often",
+            4 => "Very Often",
+            5 => "Always",
+            _ => "N/A"
+        };
+    };
+    var frequencyOptions = Enumerable.Range(1, 5).Select(i => new SelectListItem { Value = i.ToString(), Text = GetFrequencyText(i) });
 }
 
 <div class="form-container">
     <h1 class="text-center">@ViewData["Title"]</h1>
-    <h4 class="text-center mb-4">Usage</h4>
-    <form id="usageForm" asp-action="Edit">
+    <h4 class="text-center mb-4">@Model.Appliance?.Name on @Model.Date.ToString("dd MMM yyyy")</h4>
+    <hr />
+    <form asp-action="Edit">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
         <input type="hidden" asp-for="UsageId" />
+        <input type="hidden" asp-for="UserId" /> @* Important to include UserId *@
 
+        @* Appliance Selection - Assuming ViewBag.ApplianceId is populated in controller *@
         <div class="input-group mb-3">
-            <span class="input-group-text" id="homeLabel">🏠</span>
+            <span class="input-group-text"><i class="fas fa-plug"></i></span>
             <div class="form-floating flex-grow-1">
-                <select id="HomeId" class="form-control" name="HomeId" aria-describedby="homeLabel">
-                    <option value="">Select Home</option>
-                    @foreach (var item in (SelectList)ViewData["HomeId"])
-                    {
-                        if (item.Value == ViewData["SelectedHomeId"]?.ToString())
-                        {
-                            <option value="@item.Value" selected>@item.Text</option>
-                        }
-                        else
-                        {
-                            <option value="@item.Value">@item.Text</option>
-                        }
-                    }
-                </select>
-                <label for="HomeId">Home</label>
+                <select asp-for="ApplianceId" class="form-select" asp-items="ViewBag.ApplianceId"></select>
+                <label asp-for="ApplianceId"></label>
+            </div>
+        </div>
+        <span asp-validation-for="ApplianceId" class="text-danger d-block mb-2"></span>
+
+        @* Date and Time Inputs side-by-side *@
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                    <div class="form-floating flex-grow-1">
+                        <input asp-for="Date" type="date" class="form-control" />
+                        <label asp-for="Date"></label>
+                    </div>
+                </div>
+                <span asp-validation-for="Date" class="text-danger d-block mb-2"></span>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                    <div class="form-floating flex-grow-1">
+                        <input asp-for="Time" type="time" class="form-control" />
+                        <label asp-for="Time"></label>
+                    </div>
+                </div>
+                <span asp-validation-for="Time" class="text-danger d-block mb-2"></span>
             </div>
         </div>
 
-        <div class="input-group mb-3">
-            <span class="input-group-text" id="applianceLabel">🔌</span>
-            <div class="form-floating flex-grow-1">
-                <select id="ApplianceId" asp-for="ApplianceId" class="form-control" data-selected-id="@ViewData["SelectedApplianceId"]" aria-describedby="applianceLabel">
-                    <option value="">Select Appliance</option>
-                </select>
-                <label asp-for="ApplianceId">Appliance</label>
+        @* Energy Used and Frequency side-by-side *@
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="fas fa-bolt"></i></span>
+                    <div class="form-floating flex-grow-1">
+                        <input asp-for="EnergyUsed" type="number" step="0.01" class="form-control" placeholder="Energy Used (kWh)" />
+                        <label asp-for="EnergyUsed"></label>
+                    </div>
+                </div>
+                <span asp-validation-for="EnergyUsed" class="text-danger d-block mb-2"></span>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="fas fa-sync-alt"></i></span>
+                    <div class="form-floating flex-grow-1">
+                        <select asp-for="UsageFrequency" class="form-select" asp-items="frequencyOptions"></select>
+                        <label asp-for="UsageFrequency"></label>
+                    </div>
+                </div>
+                <span asp-validation-for="UsageFrequency" class="text-danger d-block mb-2"></span>
             </div>
         </div>
-        <span asp-validation-for="ApplianceId" class="text-danger"></span>
 
+        @* --- NEW FIELDS --- *@
         <div class="input-group mb-3">
-            <span class="input-group-text" id="dateLabel">📅</span>
+            <span class="input-group-text"><i class="fas fa-info-circle"></i></span>
             <div class="form-floating flex-grow-1">
-                <input asp-for="Date" class="form-control" type="date" aria-describedby="dateLabel" />
-                <label asp-for="Date">Date</label>
+                <textarea asp-for="ContextNotes" class="form-control" placeholder="Context or Notes (e.g., Guests over, Weekend cleaning)" style="height: 80px"></textarea>
+                <label asp-for="ContextNotes"></label>
             </div>
         </div>
-        <span asp-validation-for="Date" class="text-danger"></span>
+        <span asp-validation-for="ContextNotes" class="text-danger d-block mb-2"></span>
 
-        <div class="input-group mb-3">
-            <span class="input-group-text" id="timeLabel">⏰</span>
-            <div class="form-floating flex-grow-1">
-                <input asp-for="Time" class="form-control" type="time" aria-describedby="timeLabel" />
-                <label asp-for="Time">Time</label>
-            </div>
-        </div>
-        <span asp-validation-for="Time" class="text-danger"></span>
+        @* IconClass is likely derived, so keep it hidden *@
+        <input type="hidden" asp-for="IconClass" />
+        @* --- END NEW FIELDS --- *@
 
-        <div class="input-group mb-3">
-            <span class="input-group-text" id="energyLabel">⚡</span>
-            <div class="form-floating flex-grow-1">
-                <input asp-for="EnergyUsed" class="form-control" type="number" step="0.01" placeholder="Energy Used (kWh)" aria-describedby="energyLabel" />
-                <label asp-for="EnergyUsed">Energy Used (kWh)</label>
-            </div>
-        </div>
-        <span asp-validation-for="EnergyUsed" class="text-danger"></span>
-
-        <div class="input-group mb-3">
-            <span class="input-group-text" id="frequencyLabel">🔄</span>
-            <div class="form-floating flex-grow-1">
-                <select asp-for="UsageFrequency" class="form-control" aria-describedby="frequencyLabel">
-                    <option value="">Select Frequency</option>
-                    @foreach (var item in (Dictionary<int, string>)ViewData["UsageFrequencyOptions"])
-                    {
-                        <option value="@item.Key">@item.Value</option>
-                    }
-                </select>
-                <label asp-for="UsageFrequency">Usage Frequency</label>
-            </div>
-        </div>
-        <span asp-validation-for="UsageFrequency" class="text-danger"></span>
-
-        <div class="d-grid">
-            <button type="submit" class="btn btn-primary">Save</button>
+        <div class="d-grid gap-2 mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">Save Changes</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
         </div>
     </form>
-
-    <div class="text-center mt-4">
-        <a asp-action="Index" class="back-link">Back to List</a>
-    </div>
 </div>
 
 @section Scripts {
-    <script src="~/js/usageEdit.js" defer></script>
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    @* Include JS for dependent dropdown if needed *@
+    @* <script src="~/js/usageEdit.js" asp-append-version="true"></script> *@
 }
-

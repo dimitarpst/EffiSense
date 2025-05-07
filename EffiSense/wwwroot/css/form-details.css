@@ -1,0 +1,189 @@
+﻿/* EffiSense/wwwroot/css/forms-details.css */
+
+/* --- Common Card Styling (from detailsDelete.css, applicable elsewhere) --- */
+.card.details-card, /* Add a more specific class if needed */
+.form-container { /* Re-using .form-container for similar card-like appearance */
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--bg-secondary); /* Use secondary for slightly lighter cards */
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-border-radius); /* Use global card radius */
+    box-shadow: 0 4px 10px rgba(var(--shadow-color-rgb), 0.1);
+    max-width: 700px; /* Unified max-width, adjust as needed */
+    color: var(--text-primary);
+    transition: box-shadow 0.3s ease;
+}
+
+    .card.details-card:hover,
+    .form-container:hover {
+        box-shadow: 0 8px 20px rgba(var(--shadow-color-rgb), 0.15);
+    }
+
+    /* --- Headings within Forms and Details Cards --- */
+    .form-container h1,
+    .form-container h4,
+    .details-card .card-header h3, /* Assuming details might have a card-header */
+    .details-card h3, .details-card h4 { /* General headings in details */
+        font-weight: 600; /* Slightly less bold than original for a cleaner look */
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+    }
+
+/* --- Form Specific Styling (from createEdit.css) --- */
+.form-floating > label { /* Bootstrap 5 floating label */
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.form-control,
+.form-select { /* Include form-select for consistency */
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 0 var(--button-border-radius) var(--button-border-radius) 0;
+    padding: 0.75rem 1rem; /* Adjusted padding */
+    font-size: 1rem;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        background-color: var(--bg-hover);
+        color: var(--text-primary);
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 .25rem rgba(var(--shadow-color-rgb), 0.1); /* Focus shadow */
+        outline: none;
+    }
+
+.input-group-text {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: var(--button-border-radius) 0 0 var(--button-border-radius); /* Match form-control */
+    font-size: 1.25rem;
+}
+
+/* Input group with button: ensure button has correct right-side radius */
+.input-group > .form-control:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group > .form-select:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group > .btn:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+
+.text-danger { /* Bootstrap's validation error color */
+    color: var(--danger-color) !important; /* Ensure override if needed */
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* --- Button Styling (common for forms and details/delete pages) --- */
+/* Primary button in forms/details */
+.form-container .btn-primary,
+.details-card .btn-primary {
+    font-weight: bold;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--button-border-radius);
+    /* Gradient from site.css will apply if .btn-primary is used directly */
+    /* Or define a specific one here if needed */
+}
+/* Hover for primary used in forms (if different from global) */
+/*
+.form-container .btn-primary:hover {
+    background: var(--accent-secondary);
+    box-shadow: 0 4px 6px rgba(var(--shadow-color-rgb), 0.2);
+}
+*/
+
+/* Warning button (from detailsDelete.css) */
+.btn-warning {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: var(--text-on-light-accent); /* Assuming warning color is light enough */
+    border-radius: var(--button-border-radius);
+    border: none; /* From original */
+}
+
+    .btn-warning:hover {
+        background-color: var(--warning-color); /* Keep bg, maybe darken/lighten slightly */
+        opacity: 0.85;
+        border-color: var(--warning-color);
+    }
+
+/* Secondary button (from detailsDelete.css) */
+.btn-secondary {
+    background-color: var(--bg-tertiary); /* Use a theme neutral */
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+    border-radius: var(--button-border-radius);
+    border: none; /* From original */
+}
+
+    .btn-secondary:hover {
+        background-color: var(--bg-hover);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+
+/* Generic large button style (from detailsDelete.css) */
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: var(--button-border-radius); /* Consistent radius */
+}
+
+/* Back link styling (from createEdit.css) */
+.back-link {
+    color: var(--link-color);
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block; /* For margin */
+    margin-top: 1rem;
+}
+
+    .back-link:hover {
+        color: var(--link-hover-color);
+        text-decoration: underline;
+    }
+
+/* --- Details Page Specific (from detailsDelete.css) --- */
+/* list-group for displaying details */
+.details-card .list-group {
+    border-radius: 0; /* Remove default radius if card has its own */
+}
+
+.details-card .list-group-item {
+    font-size: 1.1rem; /* Slightly reduced from original for balance */
+    padding: 0.75rem 1.25rem; /* Slightly reduced padding */
+    background-color: transparent; /* Inherit from card */
+    color: var(--text-primary);
+    border-color: var(--border-color); /* Use theme border */
+}
+
+    .details-card .list-group-item:first-child {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .details-card .list-group-item:last-child {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-bottom: none; /* No border for the last item */
+    }
+
+    /* Strong tag for labels in details lists */
+    .details-card .list-group-item strong {
+        color: var(--text-secondary); /* Subtler color for labels */
+        margin-right: 0.5em;
+    }

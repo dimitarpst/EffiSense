@@ -42,7 +42,7 @@ $(document).ready(function () {
             console.log("📡 New usage received:", usage);
 
             const newUsageCard = `
-                <div class="ol-xl-4 col-lg-6 col-md-6 col-12 usage-entry">
+                <div class="col-xl-4 col-lg-6 col-md-6 col-12 usage-entry">
                     <div class="card border-0 shadow">
                         <div class="card-body">
                             <h3 class="card-title text-dark">${usage.applianceName}</h3>

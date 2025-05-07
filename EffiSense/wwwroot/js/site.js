@@ -7,18 +7,6 @@
 
         $('.navbar').toggleClass('collapsed-navbar');
 
-        if ($sidebar.hasClass('collapsed')) {
-            $('.nav-text').hide();
-        } else {
-            $('.nav-text').show();
-        }
-
-        const $boltIcon = $('.bolt-icon');
-        if ($sidebar.hasClass('collapsed')) {
-            $boltIcon.removeClass('expanded');
-        } else {
-            $boltIcon.addClass('expanded');
-        }
 
         if ($(window).width() < 992) {
             $('body').toggleClass('modal-open');

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="stylesheet" href="~/css/createEdit.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/form-details.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/index.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/chatbot.css" asp-append-version="true" />
@@ -15,10 +15,10 @@
 <body>
     <div class="d-flex" id="wrapper">
         <nav id="sidebar" class="bg-light ">
-            <div class="d-flex justify-content-start sidebar-header text-start pt-2 pb-4 ps-2">
+            <div class="d-flex justify-content-start sidebar-header text-start pt-3 pb-3 ps-2">
                 <a class="navbar-brand p-0 m-0 d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
-                    <span class="material-icons md-36 bolt-icon">bolt</span>
-                    <span class="brand-text">EffiSense</span>
+                    <span class="material-icons md-36 bolt-icon ps-1 me-1">bolt</span>
+                    <span class="brand-text">Effi<span class="sense-text">Sense</span></span>
                 </a>
 
             </div>
@@ -54,7 +54,7 @@
             <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
                 <div class="container-fluid">
                     <button class="btn btn btn-primary order-lg-1 order-2" id="sidebarToggle">
-                        <span class="material-icons me-0" style="line-height:1.5;">menu</span>
+                        <span class="material-icons me-0" style="line-height:normal;">menu</span>
                     </button>
                     <div class="ms-lg-auto me-auto me-lg-0 order-lg-2 order-1">
                         <partial name="_LoginPartial" />

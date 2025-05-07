@@ -10,38 +10,37 @@
     let wordAppendTimeout;
     let historyLoadedOrLoading = false;
 
+    // --- Function to Load Chat History ---
     function loadChatHistory() {
-        if (historyLoadedOrLoading) return; // Don't load if already loading or loaded this session
+        if (historyLoadedOrLoading) return;
 
-        historyLoadedOrLoading = true; // Mark as loading
-        $chatBody.empty(); // Clear previous messages (like default welcome)
+        historyLoadedOrLoading = true;
+        $chatBody.empty();
 
         $.ajax({
-            url: '/Usages/GetChatHistory', // New endpoint
+            url: '/Usages/GetChatHistory',
             type: 'GET',
             dataType: 'json',
             success: function (messages) {
                 if (messages && messages.length > 0) {
                     messages.forEach(function (msg) {
-                        // Append history messages instantly, no word-by-word animation
                         appendMessage(msg.text, msg.senderType === 'user' ? 'user-message' : 'bot-message', true);
                     });
                 } else {
-                    // If no history, display the initial bot welcome message
                     appendMessage("Hello! I'm your EffiSense assistant. How can I help you today?", 'bot-message', true);
                 }
-                scrollToBottom(true); // Instant scroll
+                // Use timeout to ensure elements are rendered before scrolling instantly
+                setTimeout(() => scrollToBottom(true), 0);
             },
             error: function (xhr, status, error) {
                 console.error("Error loading chat history:", status, error, xhr.responseText);
-                // Fallback to default welcome message on error
                 appendMessage("Hello! I'm your EffiSense assistant. How can I help you today?", 'bot-message', true);
-                scrollToBottom(true);
+                setTimeout(() => scrollToBottom(true), 0);
             }
-            // Not setting historyLoadedOrLoading to false here, it's per "chat open" session
         });
     }
 
+    // --- Event Listeners ---
     $chatbotFab.on('click', toggleChatWindow);
     $closeBtn.on('click', toggleChatWindow);
 
@@ -51,12 +50,11 @@
         $chatbotFab.toggleClass('fab-open');
 
         if (isChatOpen) {
-            historyLoadedOrLoading = false; // Reset for new open session
+            historyLoadedOrLoading = false;
             loadChatHistory();
+            setTimeout(() => $chatInput.focus(), 50);
         } else {
-            // When closing, you might want to clear the chat body if you don't want messages
-            // to persist visually until the next history load. For now, let's leave them.
-            // $chatBody.empty(); // Optional: clear on close
+            clearTimeout(wordAppendTimeout);
         }
     }
 
@@ -68,23 +66,23 @@
         }
     });
 
+    // --- Send Message Logic ---
     function sendMessage() {
         const messageText = $chatInput.val().trim();
         if (messageText === '') {
             return;
         }
 
-        // User message is appended instantly
         appendMessage(messageText, 'user-message', true);
         $chatInput.val('');
         clearTimeout(wordAppendTimeout);
 
-        const showIndicatorDelay = 150; // Slightly adjusted
+        const showIndicatorDelay = 150;
         setTimeout(() => {
             showTypingIndicator();
 
             $.ajax({
-                url: '/Usages/GetDashboardSuggestion', // This now also saves messages
+                url: '/Usages/GetDashboardSuggestion',
                 type: 'POST',
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
@@ -94,7 +92,6 @@
                     const hideDurationEstimate = 400;
                     setTimeout(() => {
                         if (response.success) {
-                            // Display bot's response with word-by-word animation
                             appendMessage(response.suggestion, 'bot-message', false);
                         } else {
                             appendMessage(response.message || "Sorry, I couldn't get a suggestion right now.", 'bot-message', false);
@@ -114,19 +111,26 @@
         }, showIndicatorDelay);
     }
 
-    // Modified appendMessage for instant vs. animated
+    // --- Append Message Function (Modified for smoother animation) ---
     function appendMessage(text, messageClass, instant = false) {
         const $messageElement = $('<div></div>').addClass('message ' + messageClass);
 
         if (messageClass === 'bot-message' && !instant) {
             $chatBody.append($messageElement);
-            // scrollToBottom(); // Scroll when container is ready
+            // Initial scroll to bring bubble into view
+            // Scroll happens less frequently inside the loop now
+            // scrollToBottom();
 
             const wordsAndSpaces = text.split(/(\s+)/);
             let wordIndex = 0;
-            const wordFadeDelay = 70;
+            // Slightly increased delay between words might feel smoother
+            const wordFadeDelay = 85; // Adjust this value (try 80-100)
+            // How many words to process before forcing a scroll
+            const scrollCheckInterval = 5; // Scroll every 5 words/spaces
 
             function animateNextWord() {
+                if (!isChatOpen) return; // Stop if chat closed
+
                 if (wordIndex < wordsAndSpaces.length) {
                     const part = wordsAndSpaces[wordIndex];
                     if (part.trim() !== '') {
@@ -134,26 +138,41 @@
                             .addClass('word-to-animate')
                             .text(part);
                         $messageElement.append($wordSpan);
+                        // Trigger opacity transition
                         setTimeout(() => {
                             $wordSpan.css('opacity', 1);
                         }, 10);
                     } else {
+                        // Append spaces directly
                         $messageElement.append(document.createTextNode(part));
                     }
-                    scrollToBottom();
+
                     wordIndex++;
+
+                    // Scroll only every few words/parts OR when done
+                    if (wordIndex % scrollCheckInterval === 0 || wordIndex >= wordsAndSpaces.length) {
+                        scrollToBottom(); // Use animated scroll
+                    }
+
+                    // Schedule next word
                     wordAppendTimeout = setTimeout(animateNextWord, wordFadeDelay);
+                } else {
+                    // Ensure final scroll when all words are done
+                    scrollToBottom();
                 }
             }
+            // Start animation
             const initialDelayForBubble = 50;
             wordAppendTimeout = setTimeout(animateNextWord, initialDelayForBubble);
-        } else {
+
+        } else { // User messages or history (instant)
             $messageElement.text(text);
             $chatBody.append($messageElement);
-            scrollToBottom(instant); // Pass instant flag
+            scrollToBottom(instant);
         }
     }
 
+    // --- Typing Indicator Functions ---
     function showTypingIndicator() {
         clearTimeout(typingIndicatorTimeout);
         $('#typing-indicator-element').remove();
@@ -168,7 +187,7 @@
                 <span></span>
             `);
         $chatBody.append($indicatorElement);
-        scrollToBottom();
+        scrollToBottom(); // Animated scroll for indicator
     }
 
     function hideTypingIndicator() {
@@ -186,13 +205,16 @@
         }, 100);
     }
 
+    // --- Scroll Function (Unchanged from previous fix) ---
     function scrollToBottom(instant = false) {
-        const scrollTopVal = $chatBody.prop("scrollHeight");
+        const $container = $chatBody;
+        const scrollHeight = $container.prop("scrollHeight");
+
         if (instant) {
-            $chatBody.scrollTop(scrollTopVal);
+            $container.stop(true, true).scrollTop(scrollHeight);
         } else {
-            $chatBody.animate({
-                scrollTop: scrollTopVal
+            $container.stop(true, false).animate({
+                scrollTop: scrollHeight
             }, 200);
         }
     }

@@ -1,143 +1,525 @@
-﻿#wrapper {
+﻿:root {
+    --green-darkest: #265336;
+    --green-dark: #2f563c;
+    --green-medium-dark: #3c6c3c;
+    --green-medium: #507b41;
+    --green-olive: #537b44;
+    --green-desaturated: #547c5c;
+    --green-greyish: #71926c;
+    --green-medium-light: #8cac81;
+    --green-light: #d6eac1;
+    --green-very-light: #e8f5e9;
+    --bg-primary: var(--green-darkest);
+    --bg-secondary: var(--green-dark);
+    --bg-tertiary: var(--green-medium-dark);
+    --bg-hover: var(--green-desaturated);
+    --text-primary: var(--green-light);
+    --text-secondary: var(--green-medium-light);
+    --text-on-accent: #ffffff;
+    --text-on-light-accent: var(--green-darkest);
+    --accent-primary: var(--green-medium-light);
+    --accent-secondary: var(--green-olive);
+    --accent-light-bg: var(--green-light);
+    --border-color: var(--green-desaturated);
+    --link-color: var(--green-medium-light);
+    --link-hover-color: var(--green-light);
+    --shadow-color-rgb: 47, 86, 60; /* Using dark green base */
+
+    --success-color: #6fbf73;
+    --info-color: #4fc3f7;
+    --warning-color: #ffb74d;
+    --danger-color: #e57373;
+    --button-border-radius: 0.75rem;
+    --card-border-radius: 1rem;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+    a:hover {
+        color: var(--link-hover-color);
+    }
+
+#wrapper {
     display: flex;
     flex-wrap: nowrap;
-    height: 100vh;
+    min-height: 100vh;
 }
 
 #sidebar {
     width: 200px;
-    min-width: 55px;
-    max-width: 250px;
-    transition: all 0.3s ease;
+    transition: left 0.3s ease;
     overflow-x: hidden;
-    background-color: #f8f9fa;
+    background: linear-gradient(to bottom, var(--green-dark), var(--green-darkest)); /* Gradient background */
+    border-right: 1px solid var(--border-color);
     position: fixed;
     height: 100vh;
-    z-index: 1000;
+    z-index: 1030;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 8px rgba(var(--shadow-color-rgb), 0.3); /* Adjusted shadow */
 }
 
     #sidebar.collapsed {
-        width: 55px;
+        left: -200px; 
     }
 
-        #sidebar .sidebar-header,
-        #sidebar.collapsed .navbar-brand .brand-text {
-            display: none;
+    #sidebar .sidebar-header {
+        padding: 1rem;
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    #sidebar .navbar-brand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 0;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+        #sidebar .navbar-brand .bolt-icon {
+            color: var(--accent-light-bg); /* Use light green for bolt */
         }
+
+    #sidebar .nav {
+        flex-grow: 1;
+    }
 
     #sidebar .nav-link {
         display: flex;
         align-items: center;
-        padding: 0.75rem 1rem;
-        color: #333;
-        transition: background-color 0.3s ease;
+        padding: 0.85rem 1rem;
+        color: var(--text-secondary);
+        transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
+        white-space: nowrap;
+        border-left: 3px solid transparent;
     }
 
-        #sidebar .nav-link:hover,
-        #sidebar .nav-link.active {
-            background-color: #e9ecef;
+        #sidebar .nav-link .material-icons,
+        #sidebar .nav-link .fa,
+        #sidebar .nav-link .fas,
+        #sidebar .nav-link .far {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+            margin-right: 12px;
+            color: var(--text-secondary);
+            transition: color 0.2s ease;
+        }
+
+    #sidebar.collapsed .nav-link {
+        justify-content: center;
+        padding: 0.85rem 0;
+    }
+
+        #sidebar.collapsed .nav-link .material-icons,
+        #sidebar.collapsed .nav-link .fa,
+        #sidebar.collapsed .nav-link .fas,
+        #sidebar.collapsed .nav-link .far {
+            margin-right: 0;
+        }
+
+    #sidebar .nav-link:hover {
+        background-color: var(--bg-hover);
+        color: var(--text-primary);
+        border-left-color: var(--accent-primary);
+    }
+
+        #sidebar .nav-link:hover .material-icons,
+        #sidebar .nav-link:hover .fa,
+        #sidebar .nav-link:hover .fas,
+        #sidebar .nav-link:hover .far {
+            color: var(--accent-primary);
+        }
+
+    #sidebar .nav-link.active {
+        background-color: var(--bg-hover);
+        color: var(--accent-primary);
+        font-weight: 500;
+        border-left-color: var(--accent-primary);
+    }
+
+        #sidebar .nav-link.active .material-icons,
+        #sidebar .nav-link.active .fa,
+        #sidebar .nav-link.active .fas,
+        #sidebar .nav-link.active .far {
+            color: var(--accent-primary);
         }
 
 #content-wrapper {
-    margin-left: 200px;
-    transition: all 0.3s ease;
-    width: calc(100% - 250px);
+    padding: 1.5rem;
+    margin-left: 200px; /* Matches sidebar width */
+    transition: margin-left 0.3s ease; /* CHANGE 'all' to 'margin-left' */
+    width: calc(100% - 200px); /* Adjust if needed */
+    flex-grow: 1;
+    background: linear-gradient(to bottom left, var(--green-darkest), var(--green-medium-dark), var(--green-desaturated)); /* Corrected color order */
+    color: var(--text-primary);
 }
-
 #sidebar.collapsed ~ #content-wrapper {
-    margin-left: 55px;
-    width: calc(100% - 80px);
+    margin-left: 0px;
+    width: calc(100% - 55px);
 }
 
-body {
-    overflow-x: hidden;
+/* Style for the toggle button IF it was moved here */
+#content-wrapper > #sidebarToggle {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 1021;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--button-border-radius);
+    padding: 0.375rem 0.75rem;
 }
 
-.navbar,
+    #content-wrapper > #sidebarToggle:hover {
+        background-color: var(--bg-hover);
+    }
+
+
+/* --- Footer --- */
 footer {
-    background-color: #fff;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: 1rem 0;
+    margin-top: auto;
 }
 
-footer {
-    border-top: 1px solid #dee2e6;
+/* --- General Button Styling --- */
+.btn {
+    border-radius: var(--button-border-radius);
+    transition: all 0.2s ease-in-out;
+    border: none; /* Remove default border */
 }
 
-.navbar .material-icons,
-#sidebar .nav-link .material-icons {
-    font-size: 24px;
-    margin-right: 8px;
-}
-
-.navbar .btn,
 .btn-primary {
-    border-radius: 1.25rem;
+    background: linear-gradient(to right, var(--accent-primary), var(--green-greyish)); /* Gradient button */
+    border-color: transparent; /* No border for gradient */
+    color: var(--text-on-light-accent); /* Text on light green */
 }
 
-.sidebar-header .btn {
-    margin-top: 10px;
+    .btn-primary:hover {
+        background: linear-gradient(to right, var(--green-greyish), var(--accent-primary)); /* Shift gradient */
+        border-color: transparent;
+        color: var(--text-on-light-accent);
+        box-shadow: 0 2px 5px rgba(var(--shadow-color-rgb), 0.2); /* Add hover shadow */
+    }
+
+.btn-secondary {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
 }
 
-.navbar-brand .brand-text {
-    font-size: 1.25rem;
-    font-weight: bold;
+    .btn-secondary:hover {
+        background-color: var(--bg-hover);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+/* Add styles for .btn-success, .btn-warning, .btn-danger, .btn-info using semantic vars */
+.btn-success {
+    background-color: var(--success-color);
+    color: var(--text-on-accent);
 }
 
-#mobileSidebarToggle {
-    display: none;
+    .btn-success:hover {
+        opacity: 0.85;
+    }
+
+.btn-danger {
+    background-color: var(--danger-color);
+    color: var(--text-on-accent);
 }
 
-@media (max-width: 992px) {
+    .btn-danger:hover {
+        opacity: 0.85;
+    }
+
+.btn-warning {
+    background-color: var(--warning-color);
+    color: var(--text-on-light-accent);
+}
+
+    .btn-warning:hover {
+        opacity: 0.85;
+    }
+
+.btn-info {
+    background-color: var(--info-color);
+    color: var(--text-on-light-accent);
+}
+
+    .btn-info:hover {
+        opacity: 0.85;
+    }
+
+.btn-check:focus + .btn-primary,
+.btn-primary:focus {
+    background: var(--accent-secondary); /* Using the darker olive/medium green */
+    border-color: var(--accent-secondary); /* Match background or make slightly darker */
+    color: var(--text-on-accent); /* Keep text white/light */
+    box-shadow: 0 0 0 .25rem rgba(140, 172, 129, 0.5); /* Focus ring using accent-primary (#8cac81) color with 50% opacity */
+}
+
+/* --- Mobile Specific --- */
+@media (max-width: 991.98px) {
     #sidebar {
         position: fixed;
         top: 0;
         left: -250px;
-        width: 250px;
         height: 100%;
-        z-index: 2000;
+        width: 250px;
+        z-index: 1040;
+        transition: left 0.3s ease;
+        box-shadow: 2px 0 5px rgba(var(--shadow-color-rgb), 0.15);
     }
 
+        #sidebar .sidebar-header{
+            justify-content: center!important;
+        }
         #sidebar.collapsed {
             left: 0;
+            width: 250px;
         }
 
     #content-wrapper {
-        margin-left: 0;
-        width: 100%;
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding-top: 1rem; /* Ensure some top padding when navbar is gone */
     }
 
-    body.modal-open {
+    /* Reuse mobile toggle button styling if needed */
+    /* #mobileSidebarToggle { display: block; ... } */
+
+    body.sidebar-open-overlay::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6); /* Darker overlay */
+        z-index: 1035;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    body.sidebar-open-overlay.sidebar-visible::before {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    body.sidebar-open-overflow-hidden {
         overflow: hidden;
     }
 }
 
+/* --- Existing misc styles - apply variables --- */
 h3 {
     margin-top: 30px;
     text-align: center;
-    color: #333;
+    color: var(--text-primary);
 }
 
 canvas {
     display: block;
-    margin: 0 auto;
+    margin: 20px auto;
+    max-width: 100%;
+    height: auto;
+    background-color: transparent; /* Remove background for charts */
+    border-radius: 0;
+    padding: 0;
 }
 
+
 #suggestionContainer {
-    background-color: #f8f9fa;
+    background-color: var(--bg-secondary); /* Use secondary bg */
     padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: var(--card-border-radius); /* Use card radius */
+    box-shadow: 0 4px 6px rgba(var(--shadow-color-rgb), 0.1);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
 
 .spinner-border {
     margin: 10px auto;
     display: block;
+    color: var(--accent-primary);
 }
 
 .bolt-icon {
-    transition: font-size 0.3s ease-in-out;
-    font-size: 36px; /* Default font size */
+    transition: font-size 0.3s ease-in-out, color 0.3s ease;
+    font-size: 36px;
+    color: var(--accent-light-bg); /* Use light green */
 }
 
     .bolt-icon.expanded {
-        font-size: 48px; /* Expanded font size */
+        font-size: 48px;
     }
+
+/* --- Login Partial Styles (assuming moved to sidebar footer) --- */
+.sidebar-footer {
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    padding: 0.5rem 0; /* Reduced padding */
+}
+
+    .sidebar-footer .navbar-nav {
+        flex-direction: column;
+        width: 100%;
+        margin-bottom: 0;
+        padding-left: 0;
+        list-style: none;
+    }
+
+    .sidebar-footer .nav-item {
+        width: 100%;
+        margin-bottom: 0.25rem; /* Space between items */
+    }
+
+    .sidebar-footer .nav-link,
+    .sidebar-footer .nav-link.btn {
+        display: flex;
+        align-items: center;
+        padding: 0.6rem 1rem;
+        color: var(--text-secondary);
+        text-align: left;
+        white-space: nowrap;
+        border: none;
+        background: none;
+        width: 100%;
+        border-left: 3px solid transparent;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+        .sidebar-footer .nav-link i.fas,
+        .sidebar-footer .nav-link.btn i.fas {
+            width: 24px;
+            text-align: center;
+            margin-right: 12px;
+            font-size: 1rem;
+            color: var(--text-secondary); /* Match text */
+            transition: color 0.2s ease;
+        }
+
+        .sidebar-footer .nav-link:hover,
+        .sidebar-footer .nav-link.btn:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+            text-decoration: none;
+            border-left-color: transparent; /* No accent border */
+        }
+
+            .sidebar-footer .nav-link:hover i.fas,
+            .sidebar-footer .nav-link.btn:hover i.fas {
+                color: var(--text-primary);
+            }
+
+#sidebar.collapsed .sidebar-footer {
+    padding: 0.5rem;
+}
+
+    #sidebar.collapsed .sidebar-footer .nav-text {
+        display: none;
+    }
+
+    #sidebar.collapsed .sidebar-footer .nav-link,
+    #sidebar.collapsed .sidebar-footer .nav-link.btn {
+        justify-content: center;
+        padding: 0.6rem 0;
+    }
+
+        #sidebar.collapsed .sidebar-footer .nav-link i.fas,
+        #sidebar.collapsed .sidebar-footer .nav-link.btn i.fas {
+            margin-right: 0;
+            font-size: 1.2rem;
+        }
+
+/* Styling for the sticky top navbar */
+.navbar.sticky-top {
+    background: linear-gradient(to right, var(--green-dark), var(--green-medium-dark)); /* Gradient */
+    box-shadow: 0 2px 5px rgba(var(--shadow-color-rgb), 0.5); /* Subtle shadow */
+    border-radius: var(--card-border-radius) ; /* Use card radius */
+
+    padding-top: 0.5rem; /* Adjust padding as needed */
+    padding-bottom: 0.5rem;
+}
+
+    /* Override Bootstrap text/link colors for dark background */
+    .navbar.sticky-top .navbar-brand,
+    .navbar.sticky-top .nav-link,
+    .navbar.sticky-top .navbar-text {
+        color: var(--text-primary); /* Light text on dark background */
+        transition: color 0.2s ease;
+    }
+
+        .navbar.sticky-top .nav-link:hover,
+        .navbar.sticky-top .navbar-brand:hover {
+            color: var(--link-hover-color); /* Lighter text on hover */
+        }
+
+    /* Style the toggler button (hamburger menu) if present */
+    .navbar.sticky-top .navbar-toggler {
+        border-color: rgba(255, 255, 255, 0.1); /* Lighter border for toggler */
+    }
+
+    .navbar.sticky-top .navbar-toggler-icon {
+        /* Use Bootstrap's SVG background image but color it for dark bg */
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28214, 234, 193, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+    /* Style any buttons placed directly in the navbar */
+    .navbar.sticky-top .btn-primary {
+        /* Example: Use accent colors */
+        background: linear-gradient(to right, var(--accent-primary), var(--green-greyish));
+        border-color: transparent;
+        color: var(--text-on-light-accent);
+    }
+
+        .navbar.sticky-top .btn-primary:hover {
+            background: linear-gradient(to right, var(--green-greyish), var(--accent-primary));
+            border-color: transparent;
+            color: var(--text-on-light-accent);
+        }
+
+    /* Add styles for other elements like dropdowns if needed */
+    .navbar.sticky-top .dropdown-menu {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--button-border-radius);
+    }
+
+    .navbar.sticky-top .dropdown-item {
+        color: var(--text-primary);
+    }
+
+        .navbar.sticky-top .dropdown-item:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--link-hover-color);
+        }
+
+.btn-check:active + .btn-primary:focus, .btn-check:checked + .btn-primary:focus, .btn-primary.active:focus, .btn-primary:active:focus, .show > .btn-primary.dropdown-toggle:focus {
+    box-shadow: 0 0 0 .25rem rgba(var(--shadow-color-rgb), .5);
+}

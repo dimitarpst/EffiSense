@@ -3,23 +3,20 @@
         <h1 class="text-center mb-4">Dashboard</h1>
 
     <div class="row g-4">
-        <div class="col-lg-6 col-md-12 d-flex">
-            <div class="p-4 border rounded shadow-sm bg-light text-center flex-grow-1 d-flex flex-column justify-content-center align-items-center">
-
+        <div class="col-lg-6 col-md-12 d-flex signalR-card">
+            <div class="p-4 text-center flex-grow-1 d-flex flex-column justify-content-center align-items-center styled-card">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <h4 class="m-0">IoT Simulation Control</h4>
                     <div id="simulationIndicator" class="status-light bg-danger"></div>
                 </div>
-
                 <button id="toggleSimulation" class="btn btn-lg btn-primary d-flex align-items-center justify-content-center">
                     <span class="material-icons" id="simulationIcon">play_arrow</span>
                 </button>
-
             </div>
         </div>
 
-        <div class="col-lg-6 col-md-12 d-flex">
-            <div class="p-4 border rounded shadow-sm bg-light text-center flex-grow-1 d-flex flex-column justify-content-center align-items-center">
+        <div class="col-lg-6 col-md-12 d-flex signalR-card">
+            <div class="p-4 text-center flex-grow-1 d-flex flex-column justify-content-center align-items-center styled-card">
                 <h5 class="mb-3">Set Simulation Interval (1-60s)</h5>
                 <div class="input-group" style="max-width: 200px;">
                     <input type="number" id="intervalInput" class="form-control text-center" min="1" max="60" value="5" />

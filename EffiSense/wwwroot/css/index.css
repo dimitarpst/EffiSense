@@ -1,96 +1,304 @@
-﻿.container {
+﻿/* :root variables are assumed to be defined in site.css */
+
+.container {
     margin-top: 2rem;
     margin-bottom: 2rem;
 }
 
-.card {
-    border-radius: 15px;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+/* --- Pinterest-style Masonry Grid Container using CSS Columns --- */
+.masonry-grid-container {
+    column-count: 3;
+    column-gap: 1.5rem;
+    padding-top: 1rem;
 }
 
-    .card:hover {
-        transform: scale(1.03);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    .masonry-grid-container .card {
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 1.5rem;
+        break-inside: avoid-column;
+        position: relative;
+        border-radius: var(--card-border-radius);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+        box-shadow: 0 5px 12px rgba(var(--shadow-color-rgb), 0.1);
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
     }
 
-.card-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #343a40;
+.card:hover {
+    transform: translateY(-4px) scale(1.015);
+    box-shadow: 0 10px 20px rgba(var(--shadow-color-rgb), 0.15);
+    border-color: var(--accent-primary);
 }
 
-.card .list-unstyled li {
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
+/* --- Card Variations (Keep these for visual interest) --- */
+.masonry-grid-container .card:nth-child(5n+2) {
+    background: linear-gradient(140deg, var(--bg-secondary), var(--green-desaturated));
+    border-left: 4px solid var(--accent-primary);
+}
+
+.masonry-grid-container .card:nth-child(5n+3) {
+    background: var(--bg-tertiary);
+    box-shadow: 0 7px 15px rgba(var(--shadow-color-rgb), 0.12);
+}
+
+    .masonry-grid-container .card:nth-child(5n+3):hover {
+        box-shadow: 0 14px 28px rgba(var(--shadow-color-rgb), 0.18);
+    }
+
+
+.masonry-grid-container .card:nth-child(5n+5) {
+    background: linear-gradient(to bottom left, var(--green-medium-dark), var(--green-dark));
+    color: var(--text-on-accent);
+    border-color: var(--green-medium-dark);
+}
+
+    .masonry-grid-container .card:nth-child(5n+5) .card-main-title,
+    .masonry-grid-container .card:nth-child(5n+5) .card-brand-text,
+    .masonry-grid-container .card:nth-child(5n+5) .card-power-value,
+    .masonry-grid-container .card:nth-child(5n+5) .card-power-label,
+    .masonry-grid-container .card:nth-child(5n+5) .card-note-text,
+    .masonry-grid-container .card:nth-child(5n+5) .card-purchase-info,
+    .masonry-grid-container .card:nth-child(5n+5) .card-home-info-header, /* Added for Home info */
+    .masonry-grid-container .card:nth-child(5n+5) .card-efficiency-badge {
+        color: var(--text-on-accent);
+    }
+
+    .masonry-grid-container .card:nth-child(5n+5) .card-brand-separator {
+        border-left-color: var(--text-on-accent);
+        opacity: 0.5;
+    }
+    /* This was .card-header-wrapper, but we removed that class from HTML, use border on title group */
+    .masonry-grid-container .card:nth-child(5n+5) .card-title-brand-group {
+        border-bottom-color: var(--text-on-accent); /* Or directly on card-header-flex */
+        opacity: 0.5;
+    }
+
+    .masonry-grid-container .card:nth-child(5n+5) .card-efficiency-badge {
+        background-color: var(--accent-light-bg) !important;
+        color: var(--text-on-light-accent) !important;
+    }
+
+/* Card Internals - REVISED STRUCTURE */
+.card-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    position: relative;
+    min-height: 230px; /* Adjusted minimum card height */
+}
+
+.card-top-right-details {
+    position: absolute;
+    top: 0.75rem; /* Adjusted */
+    right: 1rem;
+    text-align: right;
+    z-index: 2; /* Ensure it's above header flex */
+}
+
+.card-efficiency-badge {
+    font-size: 0.7rem; /* Smaller */
+    font-weight: bold;
+    padding: 0.2em 0.45em;
+    border-radius: var(--button-border-radius);
+    background-color: var(--accent-secondary);
+    color: var(--text-on-accent);
+    display: inline-block;
+    margin-bottom: 0.2rem;
+}
+
+.card-purchase-info {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    display: block;
+}
+
+.card-header-flex { /* New wrapper for icon and title block */
+    display: flex;
+    align-items: flex-start; /* Align icon to top of text block */
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem; /* Space below entire header section */
+    border-bottom: 1px solid var(--border-color);
+    position: relative; /* For z-index if needed with top-right */
+    z-index: 1;
+}
+
+.card-icon-container {
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.card-icon {
+    font-size: 2.2rem; /* Make icon fairly large to span lines */
+    color: var(--accent-primary);
+    line-height: 1; /* Critical for consistent vertical alignment */
+    margin-top: 0.1em; /* Slight adjustment for visual centering with multi-line text */
+}
+
+.card-title-section { /* Contains Name|Brand and Home Name */
+    flex-grow: 1;
+}
+
+.card-title-brand-group {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 0.1rem; /* Small space before home name */
+}
+
+.card-main-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.card-brand-separator {
+    border-left: 1px solid var(--border-color);
+    height: 1em; /* Align with text */
+    margin: 0 0.6rem; /* Adjusted margin */
+    align-self: center;
+}
+
+.card-brand-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.2;
+}
+
+.card-home-info-header { /* For Home Name directly below Name|Brand */
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin: 0;
+    padding-top: 0.1rem; /* Small space */
+    line-height: 1.2;
+}
+
+
+.card-power-details {
+    text-align: center;
+    margin: 1rem 0 1.25rem 0; /* Adjusted margin */
+}
+
+.card-power-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: block;
+    line-height: 1;
+}
+
+.card-power-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.card-note-text, .card-note-text-spacer {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 0; /* Notes come after power rating */
+    margin-bottom: 1rem;
+    flex-grow: 1;
+    font-style: italic;
+    line-height: 1.6;
+    min-height: 2em; /* Ensure at least some space for flex-grow to work */
+}
+
+
+.actions-row {
+    margin-top: auto;
+    padding-top: 0.5rem;
 }
 
 .card .btn {
-    font-size: 1rem;
-    padding: 0.75rem;
-    font-weight: bold;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    border-radius: var(--button-border-radius);
+    transition: all 0.25s ease;
+    border-width: 1px;
+    border-style: solid;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
+    .card .btn + .btn {
+        margin-left: 0.5rem;
+    }
+
+/* --- Button Specific Styles --- */
 .btn-warning {
-    background-color: #ffc107;
-    border-color: #ffc107;
-    color: #212529;
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: var(--text-on-light-accent);
 }
 
     .btn-warning:hover {
         background-color: transparent;
-        color: #ffc107;
+        border-color: var(--warning-color);
+        color: var(--warning-color);
     }
 
 .btn-info {
-    background-color: #17a2b8;
-    border-color: #17a2b8;
-    color: #fff;
+    background-color: var(--info-color);
+    border-color: var(--info-color);
+    color: var(--text-on-light-accent);
 }
 
     .btn-info:hover {
         background-color: transparent;
-        color: #17a2b8;
+        border-color: var(--info-color);
+        color: var(--info-color);
     }
 
 .btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: #fff;
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+    color: var(--text-on-accent);
 }
 
     .btn-danger:hover {
         background-color: transparent;
-        color: #dc3545;
+        border-color: var(--danger-color);
+        color: var(--danger-color);
     }
 
-.btn-primary,
-.btn-danger,
 .btn-success {
-    padding: 0.75rem 1.5rem;
-    font-size: 1.2rem;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: all 0.3s ease-in-out;
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    color: var(--text-on-accent);
 }
-
-    .btn-primary:hover {
-        background-color: transparent;
-        color: #007bff;
-    }
-
-    .btn-danger:hover {
-        background-color: transparent;
-        color: #dc3545;
-    }
 
     .btn-success:hover {
         background-color: transparent;
-        color: #28a745;
+        border-color: var(--success-color);
+        color: var(--success-color);
     }
+
+.btn-primary {
+    background: linear-gradient(to right, var(--accent-primary), var(--green-greyish));
+    border-color: transparent;
+    color: var(--text-on-light-accent);
+}
+
+    .btn-primary:hover {
+        background: linear-gradient(to right, var(--green-greyish), var(--accent-primary));
+        border-color: transparent;
+        color: var(--text-on-light-accent);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(var(--shadow-color-rgb), 0.1);
+    }
+
+/* --- Status Light & Other Elements --- */
 .status-light {
     width: 12px;
     height: 12px;
@@ -113,35 +321,126 @@
 }
 
 .status-light.active {
-    background-color: #28a745!important;
+    background-color: var(--success-color) !important;
     animation: blink 1s infinite;
 }
 
 .status-light.inactive {
-    background-color: #dc3545;
+    background-color: var(--danger-color);
 }
 
 #intervalInput {
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    border-radius: var(--button-border-radius) 0 0 var(--button-border-radius);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    padding: 0.375rem 0.75rem;
 }
+
+    #intervalInput:focus {
+        background-color: var(--bg-hover);
+        border-color: var(--accent-primary);
+        box-shadow: none;
+        outline: none;
+    }
 
 canvas {
     width: 100% !important;
     max-height: 400px;
+    background-color: transparent;
+    border-radius: 0;
+    padding: 0;
 }
 
-@media (max-width: 767px) {
+/* Responsive adjustments for column count */
+@media (max-width: 1199.98px) {
+    .masonry-grid-container {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .masonry-grid-container {
+        column-count: 1;
+    }
+
     canvas {
         max-height: 300px;
     }
 }
 
 .custom-div {
-    max-width: 100%; /* Makes sure it takes the full width */
-    margin-left: auto; /* Centers content */
-    margin-right: auto; /* Centers content */
-    padding: 20px; /* Removes default padding */
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* SignalR Card Styling */
+.signalR-card > .styled-card {
+    background: linear-gradient(to bottom right, var(--bg-secondary), var(--bg-tertiary));
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-border-radius);
+    box-shadow: 0 4px 10px rgba(var(--shadow-color-rgb), 0.15);
+    transition: box-shadow 0.3s ease;
+}
+
+    .signalR-card > .styled-card:hover {
+        box-shadow: 0 8px 20px rgba(var(--shadow-color-rgb), 0.2);
+    }
+
+.signalR-card h4,
+.signalR-card h5 {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.signalR-card .input-group {
+    background-color: transparent;
+}
+
+    .signalR-card .input-group .form-control {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+        border-right: none;
+    }
+
+        .signalR-card .input-group .form-control:focus {
+            background-color: var(--bg-primary);
+            border-color: var(--accent-primary);
+            box-shadow: none;
+        }
+
+    .signalR-card .input-group .btn-primary {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+.signalR-card #toggleSimulation {
+    padding: 0.75rem;
+    line-height: 1;
+    min-width: 60px;
+    min-height: 60px;
+}
+
+    .signalR-card #toggleSimulation .material-icons {
+        font-size: 2rem;
+    }
+
+/* Styles from site.css that you added to index.css previously */
+.brand-text {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.sense-text {
+    color: var(--accent-primary);
+}
+
+#sidebarToggle {
+    line-height: 0.7;
+    color: var(--text-primary);
 }

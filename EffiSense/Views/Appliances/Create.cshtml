@@ -1,53 +1,91 @@
 ﻿@model Appliance
 
+@{
+    ViewData["Title"] = "Create New Appliance";
+}
+
 <div class="form-container">
     <h1 class="text-center">@ViewData["Title"]</h1>
-    <h4 class="text-center mb-4">Appliance</h4>
+    <hr />
     <form asp-action="Create">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-        <div class="input-group mb-3">
-            <span class="input-group-text" id="nameLabel">📛</span>
-            <div class="form-floating flex-grow-1">
-                <input asp-for="Name" class="form-control" placeholder="Name" aria-describedby="nameLabel" />
-                <label asp-for="Name">Name</label>
-            </div>
-        </div>
-        <span asp-validation-for="Name" class="text-danger"></span>
 
         <div class="input-group mb-3">
-            <span class="input-group-text" id="homeLabel">🏠</span>
+            <span class="input-group-text"><i class="fas fa-home"></i></span>
             <div class="form-floating flex-grow-1">
-                <select asp-for="HomeId" class="form-control" asp-items="ViewBag.HomeId" aria-describedby="homeLabel">
+                <select asp-for="HomeId" class="form-select" asp-items="ViewBag.HomeId">
+                    <option value="">-- Select Home --</option>
                 </select>
-                <label asp-for="HomeId">Home</label>
+                <label asp-for="HomeId"></label>
             </div>
         </div>
-        <span asp-validation-for="HomeId" class="text-danger"></span>
+        <span asp-validation-for="HomeId" class="text-danger d-block mb-2"></span>
 
         <div class="input-group mb-3">
-            <span class="input-group-text" id="brandLabel">🏷️</span>
+            <span class="input-group-text"><i class="fas fa-tag"></i></span>
             <div class="form-floating flex-grow-1">
-                <input asp-for="Brand" class="form-control" placeholder="Brand" aria-describedby="brandLabel" />
-                <label asp-for="Brand">Brand</label>
+                <input asp-for="Name" class="form-control" placeholder="Appliance Name" />
+                <label asp-for="Name"></label>
             </div>
         </div>
-        <span asp-validation-for="Brand" class="text-danger"></span>
+        <span asp-validation-for="Name" class="text-danger d-block mb-2"></span>
 
         <div class="input-group mb-3">
-            <span class="input-group-text" id="powerRatingLabel">⚡</span>
+            <span class="input-group-text"><i class="fas fa-copyright"></i></span>
             <div class="form-floating flex-grow-1">
-                <input asp-for="PowerRating" class="form-control" placeholder="Power Rating" aria-describedby="powerRatingLabel" />
-                <label asp-for="PowerRating">Power Rating</label>
+                <input asp-for="Brand" class="form-control" placeholder="Brand" />
+                <label asp-for="Brand"></label>
             </div>
         </div>
-        <span asp-validation-for="PowerRating" class="text-danger"></span>
+        <span asp-validation-for="Brand" class="text-danger d-block mb-2"></span>
 
-        <div class="d-grid">
-            <button type="submit" class="btn btn-primary">Create</button>
+        <div class="input-group mb-3">
+            <span class="input-group-text"><i class="fas fa-bolt"></i></span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="PowerRating" class="form-control" placeholder="Power Rating (e.g., 1500W)" />
+                <label asp-for="PowerRating"></label>
+            </div>
+        </div>
+        <span asp-validation-for="PowerRating" class="text-danger d-block mb-2"></span>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text"><i class="fas fa-seedling"></i></span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="EfficiencyRating" class="form-control" placeholder="Efficiency (e.g., A++)" />
+                <label asp-for="EfficiencyRating"></label>
+            </div>
+        </div>
+        <span asp-validation-for="EfficiencyRating" class="text-danger d-block mb-2"></span>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+            <div class="form-floating flex-grow-1">
+                <input asp-for="PurchaseDate" type="date" class="form-control" />
+                <label asp-for="PurchaseDate"></label>
+            </div>
+        </div>
+        <span asp-validation-for="PurchaseDate" class="text-danger d-block mb-2"></span>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text"><i class="fas fa-sticky-note"></i></span>
+            <div class="form-floating flex-grow-1">
+                <textarea asp-for="Notes" class="form-control" placeholder="Notes about the appliance" style="height: 100px"></textarea>
+                <label asp-for="Notes"></label>
+            </div>
+        </div>
+        <span asp-validation-for="Notes" class="text-danger d-block mb-2"></span>
+
+        <input type="hidden" asp-for="IconClass" />
+
+        <div class="d-grid gap-2 mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">Create Appliance</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
         </div>
     </form>
-
-    <div class="text-center mt-4">
-        <a asp-action="Index" class="back-link">Back to List</a>
-    </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

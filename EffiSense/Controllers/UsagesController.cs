@@ -50,7 +50,7 @@ namespace EffiSense.Controllers
                 new ChatMessage(ChatMessageRole.System, "You are an assistant that provides energy-efficiency tips. Your clients are European and use EU standards for measuring energy usage, as well as Celsius instead of Fahrenheit. The user will provide details about their home setup (like building type, size, year built, insulation, heating, and a brief description) and key appliances (including name, power rating, efficiency rating, energy used, and context notes for usage). Try to use all the provided data about their home and specific appliances as much as possible to give targeted advice. Do not answer any questions that do not regard energy-efficiency. You can use Markdown for formatting your response, including bold text using **text** and unordered lists where each item starts with a hyphen (-) or an asterisk (*). Please ensure each list item is on a new line."),
                 new ChatMessage(ChatMessageRole.User, prompt)
             },
-                    MaxTokens = 300 
+                    MaxTokens = 500 
                 };
 
                 var chatResult = await openAiApi.Chat.CreateChatCompletionAsync(chatRequest);

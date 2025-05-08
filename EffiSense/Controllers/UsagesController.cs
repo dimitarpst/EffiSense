@@ -22,6 +22,7 @@ namespace EffiSense.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IHubContext<UsageHub> _hubContext;
+        private const int PageSize = 12;
 
         public UsagesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IConfiguration configuration, IHubContext<UsageHub> hubContext)
         {
@@ -99,36 +100,82 @@ namespace EffiSense.Controllers
             return Json(history);
         }
 
-        public async Task<IActionResult> Index(string dateFilter = null)
+        public async Task<IActionResult> Index(string dateFilter = null, int pageNumber = 1)
         {
-            ViewData["Title"] = "Usages";
+            ViewData["Title"] = "My Energy Usages";
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
-            // Start query, filter by user first
-            IQueryable<Usage> usagesQuery = _context.Usages.Where(u => u.UserId == user.Id);
+            IQueryable<Usage> usagesQuery = _context.Usages
+                                                .Where(u => u.UserId == user.Id)
+                                                .Include(u => u.Appliance)
+                                                    .ThenInclude(a => a.Home);
 
-            // Apply date filter if provided
             if (!string.IsNullOrEmpty(dateFilter) && DateTime.TryParse(dateFilter, out DateTime parsedDate))
             {
                 usagesQuery = usagesQuery.Where(u => u.Date.Date == parsedDate.Date);
                 ViewBag.CurrentFilter = dateFilter;
             }
-
-            // Add Includes *after* primary filtering
-            var model = await usagesQuery
-                .Include(u => u.Appliance)
-                    .ThenInclude(a => a.Home) // Include Home via Appliance
-                .OrderByDescending(u => u.Date)
-                .ThenByDescending(u => u.Time)
-                .ToListAsync();
-
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            else
             {
-                return PartialView("_UsagesGridPartial", model);
+                ViewBag.CurrentFilter = string.Empty;
             }
 
-            return View(model);
+            usagesQuery = usagesQuery.OrderByDescending(u => u.Date);
+
+            var totalItems = await usagesQuery.CountAsync();
+            var usages = await usagesQuery
+                                .Skip((pageNumber - 1) * PageSize)
+                                .Take(PageSize)
+                                .ToListAsync();
+
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.PageSize = PageSize;
+            ViewBag.HasMoreItems = (pageNumber * PageSize) < totalItems;
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest" && !(ViewData["IsFullPageLoadForFilter"]?.ToString() == "true"))
+            {
+                return PartialView("_UsagesGridPartial", usages);
+            }
+
+            return View(usages);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> LoadMoreUsages(int pageNumber = 2, string dateFilter = null)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            IQueryable<Usage> usagesQuery = _context.Usages
+                                                .Where(u => u.UserId == user.Id)
+                                                .Include(u => u.Appliance)
+                                                    .ThenInclude(a => a.Home);
+
+            if (!string.IsNullOrEmpty(dateFilter) && DateTime.TryParse(dateFilter, out DateTime parsedDate))
+            {
+                usagesQuery = usagesQuery.Where(u => u.Date.Date == parsedDate.Date);
+            }
+
+            usagesQuery = usagesQuery.OrderByDescending(u => u.Date);
+
+            int itemsToSkip = (pageNumber - 1) * PageSize;
+            var usages = await usagesQuery
+                                .Skip(itemsToSkip)
+                                .Take(PageSize)
+                                .ToListAsync();
+
+            var totalRemainingItems = await usagesQuery.CountAsync(); 
+            bool hasMore = (pageNumber * PageSize) < totalRemainingItems;
+
+            Response.Headers.Append("X-HasMoreItems", hasMore.ToString().ToLower());
+
+            if (!usages.Any())
+            {
+                return Content("");
+            }
+
+            return PartialView("../Shared/_UsageGridItems", usages);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -180,7 +227,6 @@ namespace EffiSense.Controllers
 
             if (ModelState.IsValid)
             {
-                // Assign appliance's icon class to usage if usage doesn't have one specified
                 if (string.IsNullOrEmpty(usage.IconClass) && appliance != null)
                 {
                     usage.IconClass = appliance.IconClass;
@@ -198,7 +244,7 @@ namespace EffiSense.Controllers
                     usage.EnergyUsed,
                     usage.UsageFrequency,
                     usage.ContextNotes,
-                    IconClass = usage.IconClass // Send the potentially updated IconClass
+                    IconClass = usage.IconClass 
                 });
 
                 return RedirectToAction(nameof(Index));

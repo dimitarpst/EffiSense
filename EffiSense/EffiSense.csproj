@@ -23,4 +23,11 @@
 	<ItemGroup>
 		<Folder Include="Areas\Identity\Pages\Account\" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Update="Views\Shared\_HomeCard.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	</ItemGroup>
 </Project>

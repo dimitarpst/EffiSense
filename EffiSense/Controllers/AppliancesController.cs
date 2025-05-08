@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using EffiSense.Data; // Assuming your DbContext and Models are here or in EffiSense.Models
-using EffiSense.Models;
 
 namespace EffiSense.Controllers
 {
@@ -17,6 +11,7 @@ namespace EffiSense.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private const int PageSize = 9;
 
         public AppliancesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
@@ -24,22 +19,61 @@ namespace EffiSense.Controllers
             _userManager = userManager;
         }
 
+        // GET: Appliances
         public async Task<IActionResult> Index()
         {
             ViewData["Title"] = "Appliances";
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return Challenge(); // Or another appropriate response if user is not found
-            }
+            if (user == null) return Challenge();
+
+            var appliancesQuery = _context.Appliances
+                .Where(a => a.Home.UserId == user.Id)
+                .Include(a => a.Home)
+                .OrderBy(a => a.Name);
+
+            var appliances = await appliancesQuery
+                .Take(PageSize) 
+                .ToListAsync();
+
+            ViewBag.CurrentPage = 1;
+            ViewBag.HasMoreItems = await appliancesQuery.Skip(PageSize).AnyAsync(); 
+            ViewBag.PageSize = PageSize;
+
+            return View(appliances);
+        }
+
+        // GET: Appliances/LoadMoreAppliances
+        [HttpGet]
+        public async Task<IActionResult> LoadMoreAppliances(int pageNumber = 2)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized(); 
+
+            int itemsToSkip = (pageNumber - 1) * PageSize;
 
             var appliances = await _context.Appliances
                 .Where(a => a.Home.UserId == user.Id)
                 .Include(a => a.Home)
+                .OrderBy(a => a.Name) 
+                .Skip(itemsToSkip)
+                .Take(PageSize)
                 .ToListAsync();
 
-            return View(appliances);
+            bool hasMore = await _context.Appliances
+                                     .Where(a => a.Home.UserId == user.Id)
+                                     .Skip(itemsToSkip + PageSize)
+                                     .AnyAsync();
+
+            ViewBag.HasMoreItems = hasMore; 
+
+            if (!appliances.Any())
+            {
+                return Content(""); 
+            }
+
+            return PartialView("_ApplianceGridItems", appliances);
         }
+
 
         public async Task<IActionResult> Details(int? id)
         {
@@ -60,7 +94,7 @@ namespace EffiSense.Controllers
 
             if (appliance == null)
             {
-                return NotFound(); // Or Forbid() if you want to distinguish
+                return NotFound(); 
             }
 
             return View(appliance);
@@ -88,14 +122,11 @@ namespace EffiSense.Controllers
                 return Challenge();
             }
 
-            // Explicitly remove "Home" from ModelState if it's causing issues,
-            // as we are only binding HomeId and will load Home separately if needed for validation.
             ModelState.Remove("Home");
 
             var home = await _context.Homes.FirstOrDefaultAsync(h => h.HomeId == appliance.HomeId && h.UserId == user.Id);
             if (home == null)
             {
-                // User is trying to assign appliance to a home they don't own or that doesn't exist
                 ModelState.AddModelError("HomeId", "Invalid home selection.");
                 ViewData["HomeId"] = new SelectList(_context.Homes.Where(h => h.UserId == user.Id), "HomeId", "HouseName", appliance.HomeId);
                 return View(appliance);
@@ -103,7 +134,6 @@ namespace EffiSense.Controllers
 
             if (ModelState.IsValid)
             {
-                // Home is valid and belongs to the user, proceed to add appliance
                 _context.Add(appliance);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -127,7 +157,7 @@ namespace EffiSense.Controllers
             }
 
             var appliance = await _context.Appliances
-                                      .Include(a => a.Home) // Include Home to check UserId
+                                      .Include(a => a.Home) 
                                       .FirstOrDefaultAsync(a => a.ApplianceId == id);
 
             if (appliance == null)
@@ -135,7 +165,6 @@ namespace EffiSense.Controllers
                 return NotFound();
             }
 
-            // Security check: Ensure the appliance belongs to a home owned by the current user
             if (appliance.Home == null || appliance.Home.UserId != user.Id)
             {
                 return Forbid();
@@ -161,7 +190,6 @@ namespace EffiSense.Controllers
                 return Challenge();
             }
 
-            // Fetch the existing appliance from DB to check ownership and update
             var applianceToUpdate = await _context.Appliances
                                                .Include(a => a.Home)
                                                .FirstOrDefaultAsync(a => a.ApplianceId == id);
@@ -171,25 +199,18 @@ namespace EffiSense.Controllers
                 return NotFound();
             }
 
-            // Security check: Ensure the appliance belongs to a home owned by the current user
-            // Also check if the new HomeId (if changed) belongs to the user
             var newHome = await _context.Homes.FirstOrDefaultAsync(h => h.HomeId == appliance.HomeId && h.UserId == user.Id);
             if (applianceToUpdate.Home.UserId != user.Id || newHome == null)
             {
                 return Forbid();
             }
 
-            // Remove "Home" from ModelState if it's causing issues, as it's a navigation property
-            // and we're binding HomeId.
             ModelState.Remove("Home");
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // Manually update properties on the entity tracked by EF Core
-                    // This is safer than _context.Update(appliance) if appliance is not tracked
-                    // or if you want to prevent overposting of certain properties not in Bind.
                     applianceToUpdate.HomeId = appliance.HomeId;
                     applianceToUpdate.Name = appliance.Name;
                     applianceToUpdate.Brand = appliance.Brand;
@@ -199,7 +220,6 @@ namespace EffiSense.Controllers
                     applianceToUpdate.PurchaseDate = appliance.PurchaseDate;
                     applianceToUpdate.IconClass = appliance.IconClass;
 
-                    // _context.Update(applianceToUpdate); // Or just let EF Core track changes
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -238,7 +258,7 @@ namespace EffiSense.Controllers
 
             if (appliance == null)
             {
-                return NotFound(); // Or Forbid()
+                return NotFound(); 
             }
 
             return View(appliance);
@@ -255,19 +275,17 @@ namespace EffiSense.Controllers
             }
 
             var appliance = await _context.Appliances
-                                      .Include(a => a.Home) // Include Home to check UserId
+                                      .Include(a => a.Home)
                                       .FirstOrDefaultAsync(a => a.ApplianceId == id);
 
             if (appliance != null)
             {
-                // Security check
                 if (appliance.Home == null || appliance.Home.UserId != user.Id)
                 {
                     return Forbid();
                 }
 
-                // Find and remove related usages
-                var usages = _context.Usages.Where(u => u.ApplianceId == id && u.UserId == user.Id); // Ensure user owns usages too
+                var usages = _context.Usages.Where(u => u.ApplianceId == id && u.UserId == user.Id);
                 if (usages.Any())
                 {
                     _context.Usages.RemoveRange(usages);
@@ -278,7 +296,7 @@ namespace EffiSense.Controllers
             }
             else
             {
-                return NotFound(); // Appliance to delete was not found
+                return NotFound();
             }
 
             return RedirectToAction(nameof(Index));
@@ -286,8 +304,6 @@ namespace EffiSense.Controllers
 
         private bool ApplianceExists(int id)
         {
-            // Consider adding a user check here if appliances are user-specific
-            // For now, it just checks existence.
             return _context.Appliances.Any(e => e.ApplianceId == id);
         }
     }

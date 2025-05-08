@@ -1,0 +1,9 @@
+﻿@model IEnumerable<Home>
+
+@if (Model != null && Model.Any())
+{
+    @foreach (var item in Model)
+    {
+        <partial name="_HomeCard" model="item" />
+    }
+}

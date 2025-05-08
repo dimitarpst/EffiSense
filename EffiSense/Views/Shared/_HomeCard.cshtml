@@ -1,0 +1,85 @@
+﻿@model Home
+
+<div class="card shadow">
+    <div class="card-body">
+
+        <div class="card-top-right-details">
+            @if (!string.IsNullOrEmpty(Model.HeatingType))
+            {
+                <span class="card-efficiency-badge" title="Heating Type">
+                    <i class="fas fa-fire me-1"></i>@Model.HeatingType
+                </span>
+            }
+            @if (!string.IsNullOrEmpty(Model.InsulationLevel))
+            {
+                <span class="card-efficiency-badge" title="Insulation Level">
+                    <i class="fas fa-shield-alt me-1"></i>@Model.InsulationLevel
+                </span>
+            }
+            @if (Model.YearBuilt.HasValue)
+            {
+                <div class="card-purchase-info" title="Year Built">Built: @Model.YearBuilt.Value</div>
+            }
+        </div>
+
+        <div class="card-header-flex">
+            <div class="card-icon-container">
+                @if (!string.IsNullOrEmpty(Model.BuildingType) && Model.BuildingType.Contains("Apartment"))
+                {
+                    <i class="fas fa-building card-icon"></i>
+                }
+                else
+                {
+                    <i class="fas fa-home card-icon"></i>
+                }
+            </div>
+            <div class="card-title-section">
+                <div class="card-title-brand-group">
+                    <h5 class="card-main-title">@Html.DisplayFor(modelItem => Model.HouseName)</h5>
+                    @if (!string.IsNullOrEmpty(Model.BuildingType))
+                    {
+                        <span class="card-brand-separator"></span>
+                        <span class="card-brand-text">@Html.DisplayFor(modelItem => Model.BuildingType)</span>
+                    }
+                </div>
+                <div class="card-location-address small text-muted-themed">
+                    @if (!string.IsNullOrEmpty(Model.Location))
+                    {
+                        <span title="Location"><i class="fas fa-map-marker-alt me-1"></i>@Html.DisplayFor(modelItem => Model.Location)</span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Location) && !string.IsNullOrEmpty(Model.Address))
+                    {
+                        <span class="mx-1">·</span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Address))
+                    {
+                        <span title="Address"><i class="fas fa-envelope me-1"></i>@Html.DisplayFor(modelItem => Model.Address)</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card-power-details">
+            <span class="card-power-value">@Html.DisplayFor(modelItem => Model.Size)</span>
+            <span class="card-power-label">sq. m</span>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+            <p class="card-note-text">@Html.DisplayFor(modelItem => Model.Description)</p>
+        }
+
+        <div class="actions-row row g-2">
+            <div class="col">
+                <a asp-controller="Homes" asp-action="Edit" asp-route-id="@Model.HomeId" class="btn btn-sm btn-warning w-100">Edit</a>
+            </div>
+            <div class="col">
+                <a asp-controller="Homes" asp-action="Details" asp-route-id="@Model.HomeId" class="btn btn-sm btn-info w-100">Details</a>
+            </div>
+            <div class="col">
+                <a asp-controller="Homes" asp-action="Delete" asp-route-id="@Model.HomeId" class="btn btn-sm btn-danger w-100">Delete</a>
+            </div>
+        </div>
+
+    </div>
+</div>

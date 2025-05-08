@@ -1,29 +1,37 @@
-﻿/* :root variables are assumed to be defined in site.css */
-
-.container {
+﻿.container {
     margin-top: 2rem;
     margin-bottom: 2rem;
 }
 
-/* --- Pinterest-style Masonry Grid Container using CSS Columns --- */
 .masonry-grid-container {
-    column-count: 3;
-    column-gap: 1.5rem;
     padding-top: 1rem;
 }
 
-    .masonry-grid-container .card {
-        display: inline-block;
-        width: 100%;
-        margin-bottom: 1.5rem;
-        break-inside: avoid-column;
-        position: relative;
-        border-radius: var(--card-border-radius);
-        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
-        box-shadow: 0 5px 12px rgba(var(--shadow-color-rgb), 0.1);
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        color: var(--text-primary);
+.gutter-sizer {
+    width: 1.5rem; 
+}
+
+.masonry-grid-container .card {
+    width: calc(33.333% - 1.5rem);
+    margin-bottom: 1.5rem; 
+    box-sizing: border-box; 
+    position: relative;
+    border-radius: var(--card-border-radius);
+    transition: opacity 0.5s ease-out, transform 0.4s ease-out, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+    box-shadow: 0 5px 12px rgba(var(--shadow-color-rgb), 0.1);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+    .masonry-grid-container .card.is-loading {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    .masonry-grid-container .card.is-visible {
+        opacity: 1;
+        transform: translateY(0);
     }
 
 .card:hover {
@@ -32,7 +40,7 @@
     border-color: var(--accent-primary);
 }
 
-/* --- Card Variations (Keep these for visual interest) --- */
+/* ---------- Card Variations ---------- */
 .masonry-grid-container .card:nth-child(5n+2) {
     background: linear-gradient(140deg, var(--bg-secondary), var(--green-desaturated));
     border-left: 4px solid var(--accent-primary);
@@ -40,13 +48,12 @@
 
 .masonry-grid-container .card:nth-child(5n+3) {
     background: var(--bg-tertiary);
-    box-shadow: 0 7px 15px rgba(var(--shadow-color-rgb), 0.12);
+    box-shadow: 0 7px 15px rgba(var(--shadow-color-rgb), .12);
 }
 
     .masonry-grid-container .card:nth-child(5n+3):hover {
-        box-shadow: 0 14px 28px rgba(var(--shadow-color-rgb), 0.18);
+        box-shadow: 0 14px 28px rgba(var(--shadow-color-rgb), .18);
     }
-
 
 .masonry-grid-container .card:nth-child(5n+5) {
     background: linear-gradient(to bottom left, var(--green-medium-dark), var(--green-dark));
@@ -60,19 +67,23 @@
     .masonry-grid-container .card:nth-child(5n+5) .card-power-label,
     .masonry-grid-container .card:nth-child(5n+5) .card-note-text,
     .masonry-grid-container .card:nth-child(5n+5) .card-purchase-info,
-    .masonry-grid-container .card:nth-child(5n+5) .card-home-info-header, /* Added for Home info */
+    .masonry-grid-container .card:nth-child(5n+5) .card-home-info-header,
     .masonry-grid-container .card:nth-child(5n+5) .card-efficiency-badge {
         color: var(--text-on-accent);
     }
 
     .masonry-grid-container .card:nth-child(5n+5) .card-brand-separator {
         border-left-color: var(--text-on-accent);
-        opacity: 0.5;
+        opacity: .5;
     }
-    /* This was .card-header-wrapper, but we removed that class from HTML, use border on title group */
+
     .masonry-grid-container .card:nth-child(5n+5) .card-title-brand-group {
-        border-bottom-color: var(--text-on-accent); /* Or directly on card-header-flex */
-        opacity: 0.5;
+        border-bottom-color: var(--text-on-accent);
+        opacity: .5;
+    }
+
+    .masonry-grid-container .card:nth-child(5n+5) .card-header-flex {
+        border-bottom-color: rgba(var(--text-on-accent-rgb), .5);
     }
 
     .masonry-grid-container .card:nth-child(5n+5) .card-efficiency-badge {
@@ -80,26 +91,29 @@
         color: var(--text-on-light-accent) !important;
     }
 
-/* Card Internals - REVISED STRUCTURE */
+/* --- Card Internals  --- */
 .card-body {
     padding: 1rem;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     position: relative;
-    min-height: 230px; /* Adjusted minimum card height */
+    min-height: 230px;
 }
 
 .card-top-right-details {
     position: absolute;
-    top: 0.75rem; /* Adjusted */
+    top: 0.75rem;
     right: 1rem;
     text-align: right;
-    z-index: 2; /* Ensure it's above header flex */
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
 .card-efficiency-badge {
-    font-size: 0.7rem; /* Smaller */
+    font-size: 0.7rem;
     font-weight: bold;
     padding: 0.2em 0.45em;
     border-radius: var(--button-border-radius);
@@ -107,21 +121,27 @@
     color: var(--text-on-accent);
     display: inline-block;
     margin-bottom: 0.2rem;
+    white-space: nowrap;
 }
+
+    .card-efficiency-badge i {
+        font-size: 0.9em;
+    }
 
 .card-purchase-info {
     font-size: 0.7rem;
     color: var(--text-secondary);
     display: block;
+    white-space: nowrap;
 }
 
-.card-header-flex { /* New wrapper for icon and title block */
+.card-header-flex {
     display: flex;
-    align-items: flex-start; /* Align icon to top of text block */
+    align-items: flex-start;
     padding-bottom: 0.75rem;
-    margin-bottom: 1rem; /* Space below entire header section */
+    margin-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
-    position: relative; /* For z-index if needed with top-right */
+    position: relative;
     z-index: 1;
 }
 
@@ -131,20 +151,21 @@
 }
 
 .card-icon {
-    font-size: 2.2rem; /* Make icon fairly large to span lines */
+    font-size: 2.2rem;
     color: var(--accent-primary);
-    line-height: 1; /* Critical for consistent vertical alignment */
-    margin-top: 0.1em; /* Slight adjustment for visual centering with multi-line text */
+    line-height: 1;
+    margin-top: 0.1em;
 }
 
-.card-title-section { /* Contains Name|Brand and Home Name */
+.card-title-section {
     flex-grow: 1;
+    padding-right: 60px;
 }
 
 .card-title-brand-group {
     display: flex;
-    align-items: center;
-    margin-bottom: 0.1rem; /* Small space before home name */
+    align-items: baseline;
+    margin-bottom: 0.1rem;
 }
 
 .card-main-title {
@@ -157,8 +178,8 @@
 
 .card-brand-separator {
     border-left: 1px solid var(--border-color);
-    height: 1em; /* Align with text */
-    margin: 0 0.6rem; /* Adjusted margin */
+    height: 1em;
+    margin: 0 0.6rem;
     align-self: center;
 }
 
@@ -169,19 +190,32 @@
     line-height: 1.2;
 }
 
-.card-home-info-header { /* For Home Name directly below Name|Brand */
+.card-home-info-header {
     font-size: 0.8rem;
     color: var(--text-secondary);
     font-style: italic;
     margin: 0;
-    padding-top: 0.1rem; /* Small space */
+    padding-top: 0.1rem;
     line-height: 1.2;
 }
 
+.card-location-address {
+    margin-top: 0.25rem;
+    line-height: 1.4;
+    color: var(--text-secondary);
+}
+
+    .card-location-address span[title] {
+        display: inline-block;
+    }
+
+    .card-location-address i {
+        opacity: 0.7;
+    }
 
 .card-power-details {
     text-align: center;
-    margin: 1rem 0 1.25rem 0; /* Adjusted margin */
+    margin: 1rem 0 1.25rem 0;
 }
 
 .card-power-value {
@@ -205,14 +239,13 @@
     font-size: 0.9rem;
     color: var(--text-secondary);
     text-align: center;
-    margin-top: 0; /* Notes come after power rating */
+    margin-top: 0;
     margin-bottom: 1rem;
     flex-grow: 1;
     font-style: italic;
     line-height: 1.6;
-    min-height: 2em; /* Ensure at least some space for flex-grow to work */
+    min-height: 2em;
 }
-
 
 .actions-row {
     margin-top: auto;
@@ -352,20 +385,16 @@ canvas {
     padding: 0;
 }
 
-/* Responsive adjustments for column count */
-@media (max-width: 1199.98px) {
-    .masonry-grid-container {
-        column-count: 2;
+/* Responsive adjustments FOR MASONRY */
+ @media (max-width: 1199.98px) {
+    .masonry-grid-container .card {
+        width: calc(50% - 1.5rem);
     }
-}
-
+ } 
 @media (max-width: 767.98px) {
-    .masonry-grid-container {
-        column-count: 1;
-    }
 
-    canvas {
-        max-height: 300px;
+    .masonry-grid-container .card {
+        width: calc(100% - 1.5rem);
     }
 }
 
@@ -377,7 +406,6 @@ canvas {
     box-sizing: border-box;
 }
 
-/* SignalR Card Styling */
 .signalR-card > .styled-card {
     background: linear-gradient(to bottom right, var(--bg-secondary), var(--bg-tertiary));
     color: var(--text-primary);
@@ -391,8 +419,7 @@ canvas {
         box-shadow: 0 8px 20px rgba(var(--shadow-color-rgb), 0.2);
     }
 
-.signalR-card h4,
-.signalR-card h5 {
+.signalR-card h4, .signalR-card h5 {
     color: var(--text-primary);
     font-weight: 600;
 }
@@ -430,7 +457,6 @@ canvas {
         font-size: 2rem;
     }
 
-/* Styles from site.css that you added to index.css previously */
 .brand-text {
     font-weight: 700;
     color: var(--text-primary);
@@ -445,60 +471,14 @@ canvas {
     color: var(--text-primary);
 }
 
-/* Style for the new location/address line */
-.card-location-address {
-    margin-top: 0.25rem; /* Space below Name/Type */
-    line-height: 1.4;
-    color: var(--text-secondary); /* Use secondary text color */
-}
-
-    .card-location-address span[title] { /* Style spans holding location/address */
-        display: inline-block; /* Or just inline */
+@keyframes messageFadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 
-    .card-location-address i { /* Style icons */
-        opacity: 0.7;
+    to {
+        opacity: 0;
+        transform: scale(0.9) translateY(10px);
     }
-
-/* Adjustments for top-right details if needed */
-.card-top-right-details {
-    position: absolute;
-    top: 0.75rem;
-    right: 1rem;
-    text-align: right;
-    z-index: 2;
-    display: flex; /* Use flex for better alignment if multiple badges */
-    flex-direction: column; /* Stack items vertically */
-    align-items: flex-end; /* Align badges/text to the right */
-}
-
-    .card-top-right-details .card-efficiency-badge {
-        margin-bottom: 0.25rem; /* Space between badges/date */
-        /* Ensure badge styles from previous steps are suitable */
-        font-size: 0.7rem;
-        font-weight: bold;
-        padding: 0.2em 0.45em;
-        border-radius: var(--button-border-radius);
-        background-color: var(--accent-secondary);
-        color: var(--text-on-accent);
-        display: inline-block;
-        white-space: nowrap; /* Prevent badge text wrapping */
-    }
-
-        .card-top-right-details .card-efficiency-badge i {
-            font-size: 0.9em; /* Slightly smaller icon within badge */
-        }
-
-
-    .card-top-right-details .card-purchase-info {
-        font-size: 0.7rem;
-        color: var(--text-secondary);
-        display: block;
-        white-space: nowrap;
-    }
-
-/* Ensure card header doesn't overlap with top-right details */
-.card-header-flex .card-title-section {
-    /* Add some padding to the right if top-right details might overlap */
-    padding-right: 60px; /* Adjust this value based on width of top-right details */
 }

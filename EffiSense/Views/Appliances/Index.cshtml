@@ -10,73 +10,59 @@
         <a asp-action="Create" class="btn btn-lg btn-primary shadow-sm">+ Create New Appliance</a>
     </p>
 
-    <div class="masonry-grid-container">
-        @foreach (var item in Model)
-        {
-            <div class="card shadow">
-                <div class="card-body">
+    <div id="applianceGridContainer">
+        <div class="masonry-grid-container"
+             data-current-page="@ViewBag.CurrentPage"
+             data-page-size="@ViewBag.PageSize"
+             data-has-more-items="@ViewBag.HasMoreItems.ToString().ToLower()"
+             data-load-url="/Appliances/LoadMoreAppliances">
 
-                    <div class="card-top-right-details">
-                        @if (!string.IsNullOrEmpty(item.EfficiencyRating))
-                        {
-                            <span class="card-efficiency-badge">@item.EfficiencyRating</span>
-                        }
-                        @if (item.PurchaseDate.HasValue)
-                        {
-                            <div class="card-purchase-info">Purch: @item.PurchaseDate.Value.ToString("dd/MM/yy")</div>
-                        }
-                    </div>
+            <partial name="_ApplianceGridItems" model="Model" />
 
-                    <div class="card-header-flex">
-                        <div class="card-icon-container">
-                            @if (!string.IsNullOrEmpty(item.IconClass))
-                            {
-                                <i class="@item.IconClass card-icon"></i>
-                            }
-                            else
-                            {
-                                <i class="fas fa-plug card-icon"></i> 
-                            }
-                        </div>
-                        <div class="card-title-section">
-                            <div class="card-title-brand-group">
-                                <h5 class="card-main-title">@Html.DisplayFor(modelItem => item.Name)</h5>
-                                @if (!string.IsNullOrEmpty(item.Brand))
-                                {
-                                    <span class="card-brand-separator"></span>
-                                    <span class="card-brand-text">@Html.DisplayFor(modelItem => item.Brand)</span>
-                                }
-                            </div>
-                            @if (item.Home != null && !string.IsNullOrEmpty(item.Home.HouseName))
-                            {
-                                <p class="card-home-info-header">@Html.DisplayFor(modelItem => item.Home.HouseName)</p>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="card-power-details">
-                        <span class="card-power-value">@Html.DisplayFor(modelItem => item.PowerRating)</span>
-                        <span class="card-power-label">Power Rating</span>
-                    </div>
-
-                    @if (!string.IsNullOrEmpty(item.Notes))
-                    {
-                        <p class="card-note-text">@Html.DisplayFor(modelItem => item.Notes)</p>
-                    }
-
-                    <div class="actions-row row g-2">
-                        <div class="col">
-                            <a asp-action="Edit" asp-route-id="@item.ApplianceId" class="btn btn-sm btn-warning w-100">Edit</a>
-                        </div>
-                        <div class="col">
-                            <a asp-action="Details" asp-route-id="@item.ApplianceId" class="btn btn-sm btn-info w-100">Details</a>
-                        </div>
-                        <div class="col">
-                            <a asp-action="Delete" asp-route-id="@item.ApplianceId" class="btn btn-sm btn-danger w-100">Delete</a>
-                        </div>
-                    </div>
-
-                </div>
+        </div>
+        <div id="load-more-trigger-appliances" style="height: 50px;"></div>
+        <div id="loading-indicator-appliances" style="display: none; text-align: center; padding: 20px;">
+            <div class="spinner-border" style="color: var(--accent-primary);" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
-        }
+        </div>
     </div>
+</div>
+
+@section Scripts {
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const gridElement = document.querySelector('#applianceGridContainer .masonry-grid-container');
+            let msnry = null; 
+
+            if(gridElement) {
+                msnry = new Masonry( gridElement, {
+                    itemSelector: '.card',
+                    percentPosition: true,
+                    gutter: '.gutter-sizer', 
+                    transitionDuration: '0.4s' 
+                });
+
+                 const gutterSizer = document.createElement('div');
+                 gutterSizer.className = 'gutter-sizer';
+                 gridElement.appendChild(gutterSizer);
+
+
+                if (typeof setupInfiniteScroll === 'function') {
+                    setupInfiniteScroll(
+                        '#applianceGridContainer .masonry-grid-container',
+                        '#load-more-trigger-appliances',
+                        '#loading-indicator-appliances',
+                        msnry
+                    );
+                } else {
+                    // console.error("setupInfiniteScroll function not found. Ensure infiniteScroll.js is loaded BEFORE this script.");
+                }
+            } else {
+                 // console.error("Masonry grid container not found for initialization.");
+            }
+        });
+    </script>
+}

@@ -1,0 +1,57 @@
+﻿@model Appliance
+
+<div class="card shadow">
+    <div class="card-body">
+        <div class="card-top-right-details">
+            @if (!string.IsNullOrEmpty(Model.EfficiencyRating))
+            {
+                <span class="card-efficiency-badge">@Model.EfficiencyRating</span>
+            }
+            @if (Model.PurchaseDate.HasValue)
+            {
+                <div class="card-purchase-info">Purch: @Model.PurchaseDate.Value.ToString("dd/MM/yy")</div>
+            }
+        </div>
+        <div class="card-header-flex">
+            <div class="card-icon-container">
+                @if (!string.IsNullOrEmpty(Model.IconClass))
+                {
+                    <i class="@Model.IconClass card-icon"></i>
+                }
+                else
+                {
+                    <i class="fas fa-plug card-icon"></i>
+                }
+            </div>
+            <div class="card-title-section">
+                <div class="card-title-brand-group">
+                    <h5 class="card-main-title">@Html.DisplayFor(modelItem => Model.Name)</h5>
+                    @if (!string.IsNullOrEmpty(Model.Brand))
+                    {
+                        <span class="card-brand-separator"></span>
+
+                        <span class="card-brand-text">@Html.DisplayFor(modelItem => Model.Brand)</span>
+                    }
+                </div>
+                @if (Model.Home != null && !string.IsNullOrEmpty(Model.Home.HouseName))
+                {
+                    <p class="card-home-info-header">@Html.DisplayFor(modelItem => Model.Home.HouseName)</p>
+                }
+            </div>
+        </div>
+        <div class="card-power-details">
+            <span class="card-power-value">@Html.DisplayFor(modelItem => Model.PowerRating)</span>
+            <span class="card-power-label">Power Rating</span>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.Notes))
+        {
+            <p class="card-note-text">@Html.DisplayFor(modelItem => Model.Notes)</p>
+        }
+
+        <div class="actions-row row g-2">
+            <div class="col"><a asp-controller="Appliances" asp-action="Edit" asp-route-id="@Model.ApplianceId" class="btn btn-sm btn-warning w-100">Edit</a></div>
+            <div class="col"><a asp-controller="Appliances" asp-action="Details" asp-route-id="@Model.ApplianceId" class="btn btn-sm btn-info w-100">Details</a></div>
+            <div class="col"><a asp-controller="Appliances" asp-action="Delete" asp-route-id="@Model.ApplianceId" class="btn btn-sm btn-danger w-100">Delete</a></div>
+        </div>
+    </div>
+</div>

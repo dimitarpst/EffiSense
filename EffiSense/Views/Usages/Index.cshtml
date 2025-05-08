@@ -2,116 +2,269 @@
 
 @{
     ViewData["Title"] = "My Energy Usages";
-    Func<int, string> GetFrequencyText = (freq) => {
-        return freq switch {
-            1 => "Rarely",
-            2 => "Sometimes",
-            3 => "Often",
-            4 => "Very Often",
-            5 => "Always",
-            _ => "N/A"
-        };
-    };
 }
 
 <div class="container-index">
-    <h1 class="text-center">@ViewData["Title"]</h1>
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-3 flex-wrap">
+        <h1 class="text-center text-lg-start">@ViewData["Title"]</h1>
+        <p class="text-center text-lg-end my-2 my-lg-0">
+            <a asp-action="Create" class="btn btn-lg btn-primary shadow-sm">
+                <i class="fas fa-plus me-2"></i>Log New Usage
+            </a>
+        </p>
+    </div>
 
-    <p class="text-center my-4">
-        <a asp-action="Create" class="btn btn-lg btn-primary shadow-sm">+ Log New Usage</a>
-    </p>
 
     <div class="row justify-content-center mb-4">
-        <div class="col-md-4">
+        <div class="col-md-6 col-lg-4">
             <form asp-action="Index" method="get" class="d-flex gap-2">
                 <input type="date"
                        name="dateFilter"
-                       class="form-control"
+                       class="form-control form-control-lg"
                        value="@ViewBag.CurrentFilter"
-                       onchange="this.form.submit()" 
-                />
-                <a asp-action="Index" class="btn btn-secondary d-flex align-items-center">Clear</a>
+                       onchange="this.form.submit()" />
+                <a asp-action="Index" class="btn btn-secondary d-flex align-items-center" title="Clear Filter">
+                    <i class="fas fa-times"></i>
+                </a>
             </form>
         </div>
     </div>
 
-    <div id="usagesGridContainer"> 
-        @if (!Model.Any())
-        {
-            <p class="text-center text-muted">No usage data found for the selected criteria.</p>
-        }
-        else
-        {
-            <div class="masonry-grid-container">
-                @foreach (var item in Model)
-                {
-                    <div class="card shadow">
-                        <div class="card-body">
+    <div id="usagesGridContainer">
+        <div class="masonry-grid-container"
+             data-current-page="@ViewBag.CurrentPage"
+             data-page-size="@ViewBag.PageSize"
+             data-has-more-items="@ViewBag.HasMoreItems.ToString().ToLower()"
+             data-load-url="@Url.Action("LoadMoreUsages", "Usages", new { dateFilter = ViewBag.CurrentFilter })">
 
-                            <div class="card-top-right-details">
-                                <span class="card-efficiency-badge" title="Usage Frequency">
-                                    <i class="fas fa-sync-alt me-1"></i>@GetFrequencyText(item.UsageFrequency)
-                                </span>
-                            </div>
+            @if (!Model.Any())
+            {
+                <div class="col-12">
+                    <p class="text-center text-muted mt-5 fs-4">No usage data found for the selected criteria.</p>
+                </div>
+            }
+            else
+            {
+                <partial name="../Shared/_UsageGridItems" model="Model" />
+            }
+        </div>
 
-                            <div class="card-header-flex">
-                                <div class="card-icon-container">
-                                    @if (!string.IsNullOrEmpty(item.Appliance?.IconClass))
-                                    {
-                                        <i class="@item.Appliance.IconClass card-icon"></i>
-                                    }
-                                    else
-                                    {
-                                        <i class="fas fa-plug card-icon"></i> 
-                                    }
-                                </div>
-                                <div class="card-title-section">
-                                    <div class="card-title-brand-group">
-                                        <h5 class="card-main-title">@Html.DisplayFor(modelItem => item.Appliance.Name)</h5>
-                                        @if (item.Appliance?.Home != null && !string.IsNullOrEmpty(item.Appliance.Home.HouseName))
-                                        {
-                                            <span class="card-brand-separator"></span>
-                                            <span class="card-brand-text">@Html.DisplayFor(modelItem => item.Appliance.Home.HouseName)</span>
-                                        }
-                                    </div>
-                                    <p class="card-home-info-header">@item.Date.ToString("dd MMM yyyy") at @item.Time.ToString("HH:mm")</p>
-                                </div>
-                            </div>
+        <div id="load-more-trigger-usages" style="height: 50px; clear: both; display: @((bool)ViewBag.HasMoreItems ? "block" : "none");"></div>
 
-                            <div class="card-power-details">
-                                <span class="card-power-value">@Html.DisplayFor(modelItem => item.EnergyUsed)</span>
-                                <span class="card-power-label">kWh</span>
-                            </div>
-                            
-                            @if (!string.IsNullOrEmpty(item.ContextNotes))
-                            {
-                                <p class="card-note-text">@Html.DisplayFor(modelItem => item.ContextNotes)</p>
-                            }
-                            else
-                            {
-                                <div class="card-note-text-spacer"></div> 
-                            }
-                            
-                            <div class="actions-row row g-2">
-                                <div class="col">
-                                    <a asp-action="Edit" asp-route-id="@item.UsageId" class="btn btn-sm btn-warning w-100">Edit</a>
-                                </div>
-                                <div class="col">
-                                    <a asp-action="Details" asp-route-id="@item.UsageId" class="btn btn-sm btn-info w-100">Details</a>
-                                </div>
-                                <div class="col">
-                                    <a asp-action="Delete" asp-route-id="@item.UsageId" class="btn btn-sm btn-danger w-100">Delete</a>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                }
+        <div id="loading-indicator-usages" style="display: none; text-align: center; padding: 20px; clear: both;">
+            <div class="spinner-border" style="color: var(--accent-primary);" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
-        }
+            <p class="mt-2 fs-5">Loading more usages...</p>
+        </div>
     </div>
 </div>
 
 @section Scripts {
-    <script src="~/js/usagesIndex.js" asp-append-version="true"></script>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const gridElement = document.querySelector('#usagesGridContainer .masonry-grid-container');
+            let msnryUsages = null;
+
+            if (gridElement && gridElement.children.length > 0 && !gridElement.querySelector('.text-muted')) {
+                const gutterSizer = document.createElement('div');
+                gutterSizer.className = 'gutter-sizer';
+                gridElement.appendChild(gutterSizer);
+
+                msnryUsages = new Masonry(gridElement, {
+                    itemSelector: '.card',
+                    percentPosition: true,
+                    gutter: '.gutter-sizer',
+                    transitionDuration: '0.4s'
+                });
+                // console.log('Masonry initialized for Usages.');
+
+                if (typeof setupInfiniteScroll === 'function') {
+                    const hasMoreInitially = gridElement.getAttribute('data-has-more-items') === 'true';
+                    const loadMoreTriggerElement = document.getElementById('load-more-trigger-usages');
+
+                    if (loadMoreTriggerElement && !hasMoreInitially) {
+                        loadMoreTriggerElement.style.display = 'none';
+                    } else if (loadMoreTriggerElement) {
+                        loadMoreTriggerElement.style.display = 'block';
+                    }
+
+                    setupInfiniteScroll(
+                        '#usagesGridContainer .masonry-grid-container',
+                        '#load-more-trigger-usages',
+                        '#loading-indicator-usages',
+                        msnryUsages
+                    );
+                    // console.log('Infinite scroll setup initiated for Usages.');
+                } else {
+                    // console.error("setupInfiniteScroll function not found.");
+                }
+            } else if (gridElement && (gridElement.children.length === 0 || gridElement.querySelector('.text-muted'))) {
+                 // console.log("Masonry not initialized for Usages: No items or only 'no data' message.");
+            } else {
+                // console.error("Masonry grid container not found for Usages.");
+            }
+
+            const filterDateInput = document.querySelector('input[name="dateFilter"]');
+            if (filterDateInput) {
+                const savedDate = localStorage.getItem('selectedDateForUsages');
+                if (savedDate) {
+                    filterDateInput.value = savedDate;
+                }
+
+                const filterForm = filterDateInput.closest('form');
+                if (filterForm) {
+                    filterForm.addEventListener('submit', function() {
+                        if (filterDateInput.value) {
+                            localStorage.setItem('selectedDateForUsages', filterDateInput.value);
+                        } else {
+                            localStorage.removeItem('selectedDateForUsages');
+                        }
+                    });
+                }
+            }
+
+
+            const signalRFilterInput = document.querySelector('input[name="dateFilter"]');
+
+            if (gridElement) {
+                // console.log("📡 SignalR UI update enabled for Usages Index.");
+
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/usageHub") 
+                    .configureLogging(signalR.LogLevel.Information)
+                    .build();
+
+                function getUsageFrequencyTextSignalR(frequency) { 
+                    const usageFrequencyMap = { 1: "Rarely", 2: "Sometimes", 3: "Often", 4: "Very Often", 5: "Always" };
+                    return usageFrequencyMap[frequency] || "N/A";
+                }
+
+                function createUsageCardHtmlForSignalR(usage) {
+                    let iconClass = usage.iconClass || usage.appliance?.iconClass || 'fas fa-plug';
+                    let displayDate = "N/A";
+                    let displayTime = "";
+
+                    if (usage.date) {
+                        try {
+                            const dateObj = new Date(usage.date); 
+                            displayDate = dateObj.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+                            displayTime = dateObj.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+                        } catch (e) {
+                            // console.error("Error parsing usage date for SignalR card:", e);
+                            displayDate = usage.date.substring(0,10);
+                        }
+                    }
+
+                    const applianceName = usage.applianceName || 'N/A';
+                    const homeName = usage.homeName || '';
+                    const energyUsed = usage.energyUsed?.toFixed(2) ?? 'N/A';
+                    const frequencyText = getUsageFrequencyTextSignalR(usage.usageFrequency);
+                    const contextNotes = usage.contextNotes || '';
+
+                    return `
+                        <div class="card shadow">
+                            <div class="card-body">
+                                <div class="card-top-right-details">
+                                    <span class="card-efficiency-badge" title="Usage Frequency">
+                                        <i class="fas fa-sync-alt me-1"></i>${frequencyText}
+                                    </span>
+                                    ${usage.iconClass ? `<span class="card-efficiency-badge" title="Context Icon"><i class="${usage.iconClass}"></i></span>` : ''}
+                                </div>
+                                <div class="card-header-flex">
+                                    <div class="card-icon-container">
+                                        <i class="${iconClass} card-icon"></i>
+                                    </div>
+                                    <div class="card-title-section">
+                                        <div class="card-title-brand-group">
+                                            <h5 class="card-main-title">${applianceName}</h5>
+                                            ${homeName ? `<span class="card-brand-separator"></span><span class="card-brand-text">${homeName}</span>` : ''}
+                                        </div>
+                                        <p class="card-home-info-header">${displayDate}, ${displayTime}</p>
+                                    </div>
+                                </div>
+                                <div class="card-power-details">
+                                    <span class="card-power-value">${energyUsed}</span>
+                                    <span class="card-power-label">kWh</span>
+                                </div>
+                                ${contextNotes ? `<p class="card-note-text">${contextNotes}</p>` : '<div class="card-note-text-spacer" style="min-height: 1.35em;"></div>'}
+                                <div class="actions-row row g-2">
+                                    <div class="col"><a href="/Usages/Edit/${usage.usageId}" class="btn btn-sm btn-warning w-100">Edit</a></div>
+                                    <div class="col"><a href="/Usages/Details/${usage.usageId}" class="btn btn-sm btn-info w-100">Details</a></div>
+                                    <div class="col"><a href="/Usages/Delete/${usage.usageId}" class="btn btn-sm btn-danger w-100">Delete</a></div>
+                                </div>
+                            </div>
+                        </div>`;
+                }
+
+        connection.on("ReceiveUsageUpdate", function (usage) {
+                            // console.log("📡 New usage received via SignalR:", usage);
+
+                            let matchesFilter = true;
+                            const currentFilterValue = signalRFilterInput ? signalRFilterInput.value : null;
+
+                            if (currentFilterValue && usage.date) {
+                                try {
+                                    const usageDateOnly = usage.date.substring(0, 10);
+                                    if (usageDateOnly !== currentFilterValue) {
+                                        matchesFilter = false;
+                                        // console.log(`📡 SignalR: Usage ${usage.usageId} (${usageDateOnly}) does not match filter ${currentFilterValue}. Skipping UI add.`);
+                                    }
+                                } catch (e) {
+                                    console.error("SignalR: Error comparing date for filter", e);
+                                }
+                            }
+
+                            if (matchesFilter) { 
+                                const cardHtml = createUsageCardHtmlForSignalR(usage);
+                                const newElementContainer = document.createElement('div');
+                                newElementContainer.innerHTML = cardHtml.trim();
+                                const actualCardElement = newElementContainer.firstChild; 
+
+                                if (actualCardElement && msnryUsages) {
+                                    actualCardElement.style.opacity = 0;
+                            
+                                    gridElement.insertBefore(actualCardElement, gridElement.firstChild);
+                                    msnryUsages.prepended(actualCardElement);
+                            
+                                    msnryUsages.layout(); 
+                            
+                                    setTimeout(function() {
+                                        $(actualCardElement).animate({ opacity: 1 }, 500);
+                                    }, 50); 
+
+                                    // console.log(`📡 SignalR: Usage ${usage.usageId} added to UI and Masonry layout updated.`);
+                                } else {
+                                    if (!msnryUsages) {
+                                        // console.error("SignalR: Masonry instance (msnryUsages) not available. Cannot update layout.");
+                                    }
+                                    if (!actualCardElement) {
+                                        // console.error("SignalR: Card element not created from HTML. Cannot add to UI.");
+                                    }
+                                }
+                            }
+                        });
+
+                async function startSignalR() {
+                    try {
+                        await connection.start();
+                        // console.log("📡 SignalR Connected successfully for Usages page.");
+                    } catch (err) {
+                        // console.error("SignalR Connection Error (Usages page): ", err);
+                        setTimeout(startSignalR, 5000); 
+                    }
+                }
+
+                startSignalR();
+
+                connection.onclose(async (error) => {
+                    // console.warn("SignalR connection closed for Usages page.", error);
+                });
+
+            } else {
+                // console.log("📡 SignalR UI update disabled for Usages (grid container not found or empty on initial load).");
+            }
+        });
+    </script>
 }

@@ -20,8 +20,8 @@
                     <span class="material-icons md-36 bolt-icon ps-1 me-1">bolt</span>
                     <span class="brand-text">Effi<span class="sense-text">Sense</span></span>
                 </a>
-
             </div>
+
             <ul class="nav flex-column">
                 <li class="nav-item">
                     <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
@@ -56,6 +56,7 @@
                     <button class="btn btn btn-primary order-lg-1 order-2" id="sidebarToggle">
                         <span class="material-icons me-0" style="line-height:normal;">menu</span>
                     </button>
+
                     <div class="ms-lg-auto me-auto me-lg-0 order-lg-2 order-1">
                         <partial name="_LoginPartial" />
                     </div>
@@ -67,9 +68,9 @@
                     @RenderBody()
                 </div>
             </main>
-
         </div>
     </div>
+
     @if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         <div id="chatbot-fab">
@@ -82,8 +83,7 @@
                 <span>EffiSense Assistant</span>
                 <button id="chatbot-close-btn">&times;</button>
             </div>
-            <div class="chat-body" id="chat-body">
-            </div>
+            <div class="chat-body" id="chat-body"></div>
             <div class="chat-input">
                 <input type="text" id="chatbot-input" placeholder="Write a message...">
                 <button id="chatbot-send-btn">
@@ -93,16 +93,24 @@
         </div>
     }
 
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/infiniteScroll.js" asp-append-version="true"></script>
+    <script src="~/js/masonryInitializer.js" asp-append-version="true"></script>
+
     @if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         <script src="~/js/chatbot.js" asp-append-version="true"></script>
     }
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const connection = new signalR.HubConnectionBuilder()
@@ -110,25 +118,20 @@
                 .build();
 
             connection.start()
-                .then(() => console.log("SignalR Connected ✅"))
                 .catch(err => console.error("SignalR Error:", err));
 
             fetch("/Home/GetSimulationState")
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
-                    if (data.success) {
-                        const toggleButton = document.getElementById("toggleSimulation");
-                        const simulationStatus = document.getElementById("simulationStatus");
-
-                        if (toggleButton && simulationStatus) {
-                            toggleButton.textContent = data.isRunning ? "Stop Simulation" : "Start Simulation";
-                            toggleButton.classList.toggle("btn-danger", data.isRunning);
-                            toggleButton.classList.toggle("btn-success", !data.isRunning);
-                            simulationStatus.textContent = data.isRunning ? "Simulation is ON" : "Simulation is OFF";
-                        }
-                    }
-                })
-                .catch(error => console.error("Error fetching simulation state:", error));
+                    if (!data.success) return;
+                    const t = document.getElementById("toggleSimulation");
+                    const s = document.getElementById("simulationStatus");
+                    if (!t || !s) return;
+                    t.textContent = data.isRunning ? "Stop Simulation" : "Start Simulation";
+                    t.classList.toggle("btn-danger", data.isRunning);
+                    t.classList.toggle("btn-success", !data.isRunning);
+                    s.textContent = data.isRunning ? "Simulation is ON" : "Simulation is OFF";
+                }).catch(console.error);
         });
     </script>
 

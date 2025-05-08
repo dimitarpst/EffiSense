@@ -5,96 +5,77 @@
 }
 
 <div class="container-index">
-    <h1 class="text-center">@ViewData["Title"]</h1>
-    <p class="text-center my-4">
-        <a asp-action="Create" class="btn btn-lg btn-primary shadow-sm">+ Add New Home</a>
-    </p>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap mt-3">
+        <h1 class="text-center text-lg-start">@ViewData["Title"]</h1>
+        <p class="text-center text-lg-end my-2 my-lg-0">
+            <a asp-action="Create" class="btn btn-lg btn-primary shadow-sm">
+                <i class="fas fa-plus me-2"></i>Add New Home
+            </a>
+        </p>
+    </div>
 
-    <div class="masonry-grid-container">
-        @foreach (var item in Model)
-        {
-            <div class="card shadow">
-                <div class="card-body">
+    <div id="homesGridContainer">
+        <div class="masonry-grid-container"
+             data-current-page="@ViewBag.CurrentPage"
+             data-page-size="@ViewBag.PageSize"
+             data-has-more-items="@ViewBag.HasMoreItems.ToString().ToLower()"
+             data-load-url="@Url.Action("LoadMoreHomes", "Homes")">
 
-                    <div class="card-top-right-details">
-                        @if (!string.IsNullOrEmpty(item.HeatingType))
-                        {
-                            <span class="card-efficiency-badge" title="Heating Type">
-                                <i class="fas fa-fire me-1"></i>@item.HeatingType
-                            </span>
-                        }
-                        @if (!string.IsNullOrEmpty(item.InsulationLevel))
-                        {
-                            <span class="card-efficiency-badge" title="Insulation Level">
-                                <i class="fas fa-shield-alt me-1"></i>@item.InsulationLevel
-                            </span>
-                        }
-                        @if (item.YearBuilt.HasValue)
-                        {
-                            <div class="card-purchase-info" title="Year Built">Built: @item.YearBuilt.Value</div>
-                        }
-                    </div>
+            <partial name="../Shared/_HomeGridItems" model="Model" />
 
-                    <div class="card-header-flex">
-                        <div class="card-icon-container">
-                            @if (!string.IsNullOrEmpty(item.BuildingType) && item.BuildingType.Contains("Apartment"))
-                            {
-                                <i class="fas fa-building card-icon"></i>
-                            }
-                            else
-                            {
-                                <i class="fas fa-home card-icon"></i> 
-                            }
-                        </div>
-                        <div class="card-title-section">
-                            <div class="card-title-brand-group">
-                                <h5 class="card-main-title">@Html.DisplayFor(modelItem => item.HouseName)</h5>
-                                @if (!string.IsNullOrEmpty(item.BuildingType))
-                                {
-                                    <span class="card-brand-separator"></span>
-                                    <span class="card-brand-text">@Html.DisplayFor(modelItem => item.BuildingType)</span>
-                                }
-                            </div>
-                            <div class="card-location-address small text-muted-themed">
-                                @if (!string.IsNullOrEmpty(item.Location))
-                                {
-                                    <span title="Location"><i class="fas fa-map-marker-alt me-1"></i>@Html.DisplayFor(modelItem => item.Location)</span>
-                                }
-                                @if (!string.IsNullOrEmpty(item.Location) && !string.IsNullOrEmpty(item.Address))
-                                {
-                                    <span class="mx-1">·</span> 
-                                }
-                                @if (!string.IsNullOrEmpty(item.Address))
-                                {
-                                    <span title="Address"><i class="fas fa-envelope me-1"></i>@Html.DisplayFor(modelItem => item.Address)</span>
-                                }
-                            </div>
-                        </div>
-                    </div>
+        </div>
 
-                    <div class="card-power-details">
-                        <span class="card-power-value">@Html.DisplayFor(modelItem => item.Size)</span>
-                        <span class="card-power-label">sq. m</span>
-                    </div>
+        <div id="load-more-trigger-homes" style="height: 50px; clear: both;"></div>
 
-                    @if (!string.IsNullOrEmpty(item.Description))
-                    {
-                        <p class="card-note-text">@Html.DisplayFor(modelItem => item.Description)</p>
+        <div id="loading-indicator-homes" style="display: none; text-align: center; padding: 20px; clear: both;">
+            <div class="spinner-border" style="color: var(--accent-primary);" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 fs-5">Loading more homes...</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const gridElement = document.querySelector('#homesGridContainer .masonry-grid-container');
+            let msnryHomes = null; 
+
+            if (gridElement) {
+                const gutterSizer = document.createElement('div');
+                gutterSizer.className = 'gutter-sizer';
+                gridElement.appendChild(gutterSizer);
+
+                msnryHomes = new Masonry(gridElement, {
+                    itemSelector: '.card',     
+                    percentPosition: true,
+                    gutter: '.gutter-sizer',    
+                    transitionDuration: '0.4s'
+                });
+                // console.log('Masonry initialized for Homes (sync).');
+
+                if (typeof setupInfiniteScroll === 'function') {
+                    const hasMoreInitially = gridElement.getAttribute('data-has-more-items') === 'true';
+                    const loadMoreTriggerElement = document.getElementById('load-more-trigger-homes');
+
+                    if (loadMoreTriggerElement && !hasMoreInitially) {
+                        loadMoreTriggerElement.style.display = 'none';
                     }
 
-                    <div class="actions-row row g-2">
-                        <div class="col">
-                            <a asp-action="Edit" asp-route-id="@item.HomeId" class="btn btn-sm btn-warning w-100">Edit</a>
-                        </div>
-                        <div class="col">
-                            <a asp-action="Details" asp-route-id="@item.HomeId" class="btn btn-sm btn-info w-100">Details</a>
-                        </div>
-                        <div class="col">
-                            <a asp-action="Delete" asp-route-id="@item.HomeId" class="btn btn-sm btn-danger w-100">Delete</a>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        }
-    </div>
+                    setupInfiniteScroll(
+                        '#homesGridContainer .masonry-grid-container', 
+                        '#load-more-trigger-homes',                    
+                        '#loading-indicator-homes',                    
+                        msnryHomes                                     
+                    );
+                    // console.log('Infinite scroll setup initiated for Homes.');
+                } else {
+                    // console.error("setupInfiniteScroll function not found. Ensure infiniteScroll.js is loaded BEFORE this script.");
+                }
+            } else {
+                // console.error("Masonry grid container not found for Homes initialization: #homesGridContainer .masonry-grid-container");
+            }
+        });
+    </script>
+}

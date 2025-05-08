@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using EffiSense.Data; // Assuming DbContext/Models are here or EffiSense.Models
-using EffiSense.Models;
 
 namespace EffiSense.Controllers
 {
@@ -17,6 +10,7 @@ namespace EffiSense.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private const int PageSize = 9;
 
         public HomesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
@@ -26,18 +20,56 @@ namespace EffiSense.Controllers
 
         public async Task<IActionResult> Index()
         {
-            ViewData["Title"] = "Homes";
+            ViewData["Title"] = "My Homes";
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 return Challenge();
             }
 
-            var homes = await _context.Homes
+            var homesQuery = _context.Homes
                 .Where(h => h.UserId == user.Id)
+                .OrderBy(h => h.HouseName);
+
+            var homes = await homesQuery
+                .Take(PageSize)
                 .ToListAsync();
 
+            ViewBag.CurrentPage = 1;
+            ViewBag.PageSize = PageSize;
+            ViewBag.HasMoreItems = await homesQuery.Skip(PageSize).AnyAsync();
+
             return View(homes);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> LoadMoreHomes(int pageNumber = 2)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized(); 
+            }
+
+            int itemsToSkip = (pageNumber - 1) * PageSize;
+
+            var homesQuery = _context.Homes
+                .Where(h => h.UserId == user.Id)
+                .OrderBy(h => h.HouseName); 
+
+            var homes = await homesQuery
+                .Skip(itemsToSkip)
+                .Take(PageSize)
+                .ToListAsync();
+
+            Response.Headers.Append("X-HasMoreItems", (await homesQuery.Skip(itemsToSkip + PageSize).AnyAsync()).ToString().ToLower());
+
+            if (!homes.Any())
+            {
+                return Content(""); 
+            }
+
+            return PartialView("../Shared/_HomeGridItems", homes); 
         }
 
         public async Task<IActionResult> Details(int? id)

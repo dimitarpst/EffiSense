@@ -29,7 +29,7 @@ namespace EffiSense.Controllers
             var appliancesQuery = _context.Appliances
                 .Where(a => a.Home.UserId == user.Id)
                 .Include(a => a.Home)
-                .OrderBy(a => a.Name);
+                .OrderByDescending(a => a.LastModified);
 
             var appliances = await appliancesQuery
                 .Take(PageSize) 
@@ -54,7 +54,7 @@ namespace EffiSense.Controllers
             var appliances = await _context.Appliances
                 .Where(a => a.Home.UserId == user.Id)
                 .Include(a => a.Home)
-                .OrderBy(a => a.Name) 
+                .OrderByDescending(a => a.LastModified)
                 .Skip(itemsToSkip)
                 .Take(PageSize)
                 .ToListAsync();
@@ -134,6 +134,7 @@ namespace EffiSense.Controllers
 
             if (ModelState.IsValid)
             {
+                appliance.LastModified = DateTime.UtcNow; 
                 _context.Add(appliance);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -219,6 +220,9 @@ namespace EffiSense.Controllers
                     applianceToUpdate.Notes = appliance.Notes;
                     applianceToUpdate.PurchaseDate = appliance.PurchaseDate;
                     applianceToUpdate.IconClass = appliance.IconClass;
+
+                    applianceToUpdate.LastModified = DateTime.UtcNow;
+
 
                     await _context.SaveChangesAsync();
                 }

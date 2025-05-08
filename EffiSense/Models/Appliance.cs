@@ -37,5 +37,8 @@ public class Appliance
     [Display(Name = "Icon Class (Font Awesome)")]
     public string? IconClass { get; set; }
 
+    [Required] 
+    public DateTime LastModified { get; set; } 
+
     public virtual Home? Home { get; set; }
 }

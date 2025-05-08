@@ -37,11 +37,14 @@ public class Home
 
     [Range(1800, 2100, ErrorMessage = "Please enter a valid year.")] 
     [Display(Name = "Year Built")]
-    public int? YearBuilt { get; set; } 
+    public int? YearBuilt { get; set; }
 
     [DataType(DataType.MultilineText)]
     [StringLength(500, ErrorMessage = "Description cannot be longer than 500 characters.")]
-    public string? Description { get; set; } 
+    public string? Description { get; set; }
+
+    [Required]
+    public DateTime LastModified { get; set; }
 
     public virtual ApplicationUser? User { get; set; }
     public virtual ICollection<Appliance>? Appliances { get; set; }

@@ -29,7 +29,7 @@ namespace EffiSense.Controllers
 
             var homesQuery = _context.Homes
                 .Where(h => h.UserId == user.Id)
-                .OrderBy(h => h.HouseName);
+                .OrderByDescending(h => h.LastModified);
 
             var homes = await homesQuery
                 .Take(PageSize)
@@ -55,7 +55,7 @@ namespace EffiSense.Controllers
 
             var homesQuery = _context.Homes
                 .Where(h => h.UserId == user.Id)
-                .OrderBy(h => h.HouseName); 
+                .OrderByDescending(h => h.LastModified);
 
             var homes = await homesQuery
                 .Skip(itemsToSkip)
@@ -119,6 +119,7 @@ namespace EffiSense.Controllers
 
             if (ModelState.IsValid)
             {
+                home.LastModified = DateTime.UtcNow;
                 _context.Add(home);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -190,6 +191,8 @@ namespace EffiSense.Controllers
                     homeToUpdate.InsulationLevel = home.InsulationLevel;
                     homeToUpdate.YearBuilt = home.YearBuilt;
                     homeToUpdate.Description = home.Description;
+
+                    homeToUpdate.LastModified = DateTime.UtcNow;
 
                     await _context.SaveChangesAsync();
                 }

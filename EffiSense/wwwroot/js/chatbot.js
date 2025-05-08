@@ -111,63 +111,97 @@
         }, showIndicatorDelay);
     }
 
-    // --- Append Message Function (Modified for smoother animation) ---
+
+
     function appendMessage(text, messageClass, instant = false) {
-        const $messageElement = $('<div></div>').addClass('message ' + messageClass);
+        const $rootMessageElement = $('<div></div>').addClass('message ' + messageClass);
+
 
         if (messageClass === 'bot-message' && !instant) {
-            $chatBody.append($messageElement);
-            // Initial scroll to bring bubble into view
-            // Scroll happens less frequently inside the loop now
-            // scrollToBottom();
+            $chatBody.append($rootMessageElement);
 
-            const wordsAndSpaces = text.split(/(\s+)/);
-            let wordIndex = 0;
-            // Slightly increased delay between words might feel smoother
-            const wordFadeDelay = 85; // Adjust this value (try 80-100)
-            // How many words to process before forcing a scroll
-            const scrollCheckInterval = 5; // Scroll every 5 words/spaces
+            const fullHtml = parseMarkdown(text);
+            const htmlParts = fullHtml.match(/<[^>]+>|[^<]+?(?=<|$)|[^<]+$/g) || [];
 
-            function animateNextWord() {
-                if (!isChatOpen) return; // Stop if chat closed
 
-                if (wordIndex < wordsAndSpaces.length) {
-                    const part = wordsAndSpaces[wordIndex];
-                    if (part.trim() !== '') {
-                        const $wordSpan = $('<span></span>')
-                            .addClass('word-to-animate')
-                            .text(part);
-                        $messageElement.append($wordSpan);
-                        // Trigger opacity transition
-                        setTimeout(() => {
+            let partIndex = 0;
+            let $currentParentElement = $rootMessageElement; 
+
+            const wordFadeDelay = 85;
+            const tagAppendDelay = 5; 
+            const scrollCheckIntervalWords = 5; 
+
+            function animateNextHtmlPart() {
+                if (!isChatOpen || partIndex >= htmlParts.length) {
+                    if (partIndex >= htmlParts.length) {
+                        scrollToBottom(); 
+                    }
+                    return;
+                }
+
+                const currentHtmlPart = htmlParts[partIndex];
+
+                if (currentHtmlPart.startsWith('</')) { 
+                    if ($currentParentElement[0] !== $rootMessageElement[0]) {
+                        $currentParentElement = $currentParentElement.parent();
+                    }
+                    partIndex++;
+                    wordAppendTimeout = setTimeout(animateNextHtmlPart, tagAppendDelay);
+                } else if (currentHtmlPart.startsWith('<')) {
+                    const $newElement = $(currentHtmlPart);
+                    $currentParentElement.append($newElement);
+
+                    if (!(currentHtmlPart.endsWith('/>') || ['<br>', '<hr>', '<img>', '<input>'].some(sc => currentHtmlPart.startsWith(sc)))) {
+                        $currentParentElement = $newElement;
+                    }
+                    partIndex++;
+                    wordAppendTimeout = setTimeout(animateNextHtmlPart, tagAppendDelay);
+                } else { 
+                    const wordsAndSpaces = currentHtmlPart.split(/(\s+)/).filter(s => s.length > 0);
+                    let wordInChunkIndex = 0;
+
+                    function animateTextChunk() {
+                        if (!isChatOpen || wordInChunkIndex >= wordsAndSpaces.length) {
+                            if (wordInChunkIndex >= wordsAndSpaces.length) {
+                                partIndex++;
+                                wordAppendTimeout = setTimeout(animateNextHtmlPart, tagAppendDelay);
+                            }
+                            return;
+                        }
+
+                        const textSegment = wordsAndSpaces[wordInChunkIndex];
+                        if (textSegment.trim() !== '') {
+                            const $wordSpan = $('<span></span>')
+                                .addClass('word-to-animate')
+                                .text(textSegment); 
+                            $currentParentElement.append($wordSpan);
+
+                            void $wordSpan[0].offsetWidth;
                             $wordSpan.css('opacity', 1);
-                        }, 10);
-                    } else {
-                        // Append spaces directly
-                        $messageElement.append(document.createTextNode(part));
+                        } else {
+                            $currentParentElement.append(document.createTextNode(textSegment));
+                        }
+
+                        wordInChunkIndex++;
+
+                        if (wordInChunkIndex % scrollCheckIntervalWords === 0 || wordInChunkIndex >= wordsAndSpaces.length) {
+                            scrollToBottom();
+                        }
+                        wordAppendTimeout = setTimeout(animateTextChunk, wordFadeDelay);
                     }
-
-                    wordIndex++;
-
-                    // Scroll only every few words/parts OR when done
-                    if (wordIndex % scrollCheckInterval === 0 || wordIndex >= wordsAndSpaces.length) {
-                        scrollToBottom(); // Use animated scroll
-                    }
-
-                    // Schedule next word
-                    wordAppendTimeout = setTimeout(animateNextWord, wordFadeDelay);
-                } else {
-                    // Ensure final scroll when all words are done
-                    scrollToBottom();
+                    animateTextChunk(); 
                 }
             }
-            // Start animation
-            const initialDelayForBubble = 50;
-            wordAppendTimeout = setTimeout(animateNextWord, initialDelayForBubble);
+            const initialDelayForBubble = 50; 
+            wordAppendTimeout = setTimeout(animateNextHtmlPart, initialDelayForBubble);
 
-        } else { // User messages or history (instant)
-            $messageElement.text(text);
-            $chatBody.append($messageElement);
+        } else { 
+            if (messageClass === 'bot-message') { 
+                $rootMessageElement.html(parseMarkdown(text)); 
+            } else { 
+                $rootMessageElement.text(text);
+            }
+            $chatBody.append($rootMessageElement);
             scrollToBottom(instant);
         }
     }
@@ -187,7 +221,94 @@
                 <span></span>
             `);
         $chatBody.append($indicatorElement);
-        scrollToBottom(); // Animated scroll for indicator
+        scrollToBottom(); 
+    }
+    function parseMarkdown(text) {
+        if (typeof text !== 'string') {
+            return '';
+        }
+
+        let html = text;
+
+        html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+        html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+        html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+        let lines = html.split('\n');
+        let newLines = [];
+        let inList = false; 
+        let listTag = '';   
+        let listIndent = ''; 
+
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            const ulMatch = line.match(/^(\s*)(?:-|\*|\+)\s+(.*)/);
+            const olMatch = line.match(/^(\s*)(\d+\.)\s+(.*)/);
+
+            let currentItemProcessed = false;
+
+            if (ulMatch) {
+                currentItemProcessed = true;
+                const currentItemIndent = ulMatch[1];
+                const itemText = ulMatch[2];
+
+                if (!inList || listTag !== 'ul' || currentItemIndent !== listIndent) {
+                    if (inList) { 
+                        newLines.push(listIndent + '</' + listTag + '>');
+                    }
+                    listIndent = currentItemIndent;
+                    newLines.push(listIndent + '<ul>');
+                    listTag = 'ul';
+                    inList = true;
+                }
+                newLines.push(listIndent + '<li>' + itemText + '</li>');
+            } else if (olMatch) {
+                currentItemProcessed = true;
+                const currentItemIndent = olMatch[1];
+                const itemText = olMatch[3];
+
+                if (!inList || listTag !== 'ol' || currentItemIndent !== listIndent) {
+                    if (inList) { 
+                        newLines.push(listIndent + '</' + listTag + '>');
+                    }
+                    listIndent = currentItemIndent; 
+                    newLines.push(listIndent + '<ol>'); 
+                    listTag = 'ol';
+                    inList = true;
+                }
+                newLines.push(listIndent + '<li>' + itemText + '</li>');
+            }
+
+
+            if (!currentItemProcessed && inList) {
+                newLines.push(listIndent + '</' + listTag + '>');
+                inList = false;
+                listTag = '';
+                listIndent = '';
+            }
+
+            if (!currentItemProcessed) {
+                newLines.push(line);
+            }
+        }
+
+        if (inList) { 
+            newLines.push(listIndent + '</' + listTag + '>');
+        }
+        html = newLines.join('\n');
+
+        html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+        html = html.replace(/\*\*\*(.+?)\*\*\*|___(.+?)___/g, function (match, p1, p2) {
+            return '<strong><em>' + (p1 || p2) + '</em></strong>';
+        });
+        html = html.replace(/\*\*(.+?)\*\*|__(.+?)__/g, function (match, p1, p2) {
+            return '<strong>' + (p1 || p2) + '</strong>';
+        });
+        html = html.replace(/(?<!\w)\*(?!\s)(.*?[^\s])\*(?!\w)|(?<!\w)_(?!\s)(.*?[^\s])_(?!\w)/g, function (match, p1, p2) {
+            return '<em>' + (p1 || p2) + '</em>';
+        });
+
+        return html;
     }
 
     function hideTypingIndicator() {

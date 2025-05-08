@@ -1,6 +1,5 @@
-﻿
-<div class="container">
-        <h1 class="text-center mb-4">Dashboard</h1>
+﻿<div class="container">
+    <h1 class="text-center mb-4">Dashboard</h1>
 
     <div class="row g-4">
         <div class="col-lg-6 col-md-12 d-flex signalR-card">
@@ -86,48 +85,12 @@
         </div>
 
     </div>
-
-    <div class="mt-5">
-        <h2>Energy Efficiency Suggestions</h2>
-        <div>
-            <label for="userPrompt">Provide additional details for a suggestion:</label>
-            <input type="text" id="userPrompt" class="form-control" placeholder="e.g., I use my air conditioner every day." />
-            <button id="getSuggestionButton" class="btn btn-primary mt-2">Get Suggestion</button>
-        </div>
-        <div id="suggestionContainer" class="fs-5 mt-3"></div>
-    </div>
-    </div>
+</div>
 
 @section Scripts {
     <script src="~/js/charts/usageChart.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const suggestionContainer = document.getElementById('suggestionContainer');
-            suggestionContainer.style.display = 'none';
-
-            document.getElementById('getSuggestionButton').addEventListener('click', function () {
-                const userPrompt = document.getElementById('userPrompt').value;
-                suggestionContainer.style.display = 'block';
-                suggestionContainer.innerHTML = `<div class="spinner-border text-primary" role="status">
-                                                    <span class="visually-hidden">Loading...</span>
-                                                 </div>`;
-
-                fetch(`/Usages/GetDashboardSuggestion`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(userPrompt),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    suggestionContainer.innerHTML = data.success
-                        ? `<p><strong>Suggestion:</strong> ${data.suggestion}</p>`
-                        : `<p class="text-danger">${data.message}</p>`;
-                })
-                .catch(error => {
-                    console.error('Error fetching suggestion:', error);
-                    suggestionContainer.innerHTML = `<p class="text-danger">An error occurred. Please try again.</p>`;
-                });
-            });
 
             document.getElementById('fillDatabaseButton').addEventListener('click', function () {
                 const statusContainer = document.getElementById('fillDatabaseStatus');
@@ -166,17 +129,17 @@
                 })
                 .catch(error => console.error("Error fetching simulation state:", error));
 
-        toggleButton.addEventListener("click", function () {
-            isSimulationRunning = !isSimulationRunning;
-            let currentInterval = parseInt(intervalInput.value) || 5; // Fallback to 5s if empty/invalid
+            toggleButton.addEventListener("click", function () {
+                isSimulationRunning = !isSimulationRunning;
+                let currentInterval = parseInt(intervalInput.value) || 5; 
 
-            fetch(`/Home/ToggleSimulation?enable=${isSimulationRunning}&interval=${currentInterval}`, { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) updateSimulationUI();
-            })
-            .catch(error => console.error("Error toggling simulation:", error));
-        });
+                fetch(`/Home/ToggleSimulation?enable=${isSimulationRunning}&interval=${currentInterval}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) updateSimulationUI();
+                })
+                .catch(error => console.error("Error toggling simulation:", error));
+            });
 
 
             updateIntervalButton.addEventListener("click", function () {
@@ -200,7 +163,7 @@
                             .then(response => response.json())
                             .then(state => {
                                 if (state.success) {
-                                    intervalInput.value = state.interval; 
+                                    intervalInput.value = state.interval;
                                     console.log(`✅ Simulation running: ${state.isRunning}, Interval: ${state.interval}s`);
                                 }
                             });
@@ -229,4 +192,3 @@
         });
     </script>
 }
-

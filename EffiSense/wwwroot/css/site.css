@@ -509,3 +509,24 @@ canvas {
 .btn-check:active + .btn-primary:focus, .btn-check:checked + .btn-primary:focus, .btn-primary.active:focus, .btn-primary:active:focus, .show > .btn-primary.dropdown-toggle:focus {
     box-shadow: 0 0 0 .25rem rgba(var(--shadow-color-rgb), .5);
 }
+
+/* --- Chart Card Styling (Outer Card) --- */
+
+.row.g-4 .card { 
+    background-color: var(--bg-tertiary); 
+    border: 1px solid var(--border-color); 
+    border-radius: var(--card-border-radius); 
+    color: var(--text-primary); 
+    transition: transform 0.25s ease-out, box-shadow 0.25s ease-out, background-color 0.25s ease-out, border-color 0.25s ease-out; 
+}
+
+    .row.g-4 .card:hover {
+        transform: translateY(-5px) scale(1.01); 
+        background-color: var(--bg-hover); 
+        border-color: var(--accent-primary); 
+        box-shadow: 0 10px 30px rgba(var(--shadow-color-rgb), 0.3);
+    }
+
+    .row.g-4 .card .card-title {
+        color: var(--text-primary); 
+    }

@@ -4,14 +4,14 @@
     right: 25px;
     width: 60px;
     height: 60px;
-    background-color: var(--accent-primary); /* Use theme accent */
-    color: var(--text-on-light-accent); /* Text color for light accent */
+    background-color: var(--accent-primary);
+    color: var(--text-on-light-accent);
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(var(--shadow-color-rgb), 0.25); /* Use theme shadow */
+    box-shadow: 0 4px 10px rgba(var(--shadow-color-rgb), 0.25);
     z-index: 1000;
     transition: transform 0.3s ease, background-color 0.3s ease;
     overflow: hidden;
@@ -19,7 +19,7 @@
 
     #chatbot-fab:hover {
         transform: scale(1.1);
-        background-color: var(--link-hover-color); /* Use link hover as slightly lighter accent */
+        background-color: var(--link-hover-color);
     }
 
     #chatbot-fab .fab-icon {
@@ -56,9 +56,9 @@
     max-width: 90%;
     height: 550px;
     max-height: calc(100vh - 120px);
-    background-color: var(--bg-secondary); /* Use theme secondary bg */
-    border-radius: var(--card-border-radius); /* Use consistent radius */
-    box-shadow: 0 8px 25px rgba(var(--shadow-color-rgb), 0.8); /* Use theme shadow */
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-border-radius);
+    box-shadow: 0 8px 25px rgba(var(--shadow-color-rgb), 0.8); 
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -67,7 +67,7 @@
     transform: translateY(30px) scale(0.9);
     visibility: hidden;
     transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0.35s;
-    border: 1px solid var(--border-color); /* Add border */
+    border: 1px solid var(--border-color); 
 }
 
     #chatbot-window.open {
@@ -79,16 +79,16 @@
     }
 
 .chat-header {
-    background: linear-gradient(to right, var(--green-olive), var(--accent-secondary)); /* Use theme greens */
-    color: var(--text-on-accent); /* Text on dark green */
+    background: linear-gradient(to right, var(--green-olive), var(--accent-secondary)); 
+    color: var(--text-on-accent);
     padding: 12px 18px;
-    border-bottom: 1px solid var(--green-darkest); /* Darkest border */
+    border-bottom: 1px solid var(--green-darkest);
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-weight: 600;
-    border-top-left-radius: var(--card-border-radius); /* Match window radius */
-    border-top-right-radius: var(--card-border-radius); /* Match window radius */
+    border-top-left-radius: var(--card-border-radius); 
+    border-top-right-radius: var(--card-border-radius);
 }
 
 #chatbot-close-btn {
@@ -96,19 +96,19 @@
     border: none;
     font-size: 22px;
     cursor: pointer;
-    color: rgba(255, 255, 255, 0.7); /* Use white with opacity */
+    color: rgba(255, 255, 255, 0.7); 
     transition: color 0.2s ease;
 }
 
     #chatbot-close-btn:hover {
-        color: var(--text-on-accent); /* Full white on hover */
+        color: var(--text-on-accent); 
     }
 
 .chat-body {
     flex-grow: 1;
     padding: 15px;
     overflow-y: auto;
-    background-color: var(--bg-primary); /* Use darkest bg for chat body */
+    background-color: var(--bg-primary); 
     display: flex;
     flex-direction: column;
 }
@@ -118,17 +118,17 @@
     }
 
     .chat-body::-webkit-scrollbar-track {
-        background: var(--bg-secondary); /* Theme track */
+        background: var(--bg-secondary); 
         border-radius: 10px;
     }
 
     .chat-body::-webkit-scrollbar-thumb {
-        background: var(--bg-tertiary); /* Theme thumb */
+        background: var(--bg-tertiary); 
         border-radius: 10px;
     }
 
         .chat-body::-webkit-scrollbar-thumb:hover {
-            background: var(--bg-hover); /* Theme thumb hover */
+            background: var(--bg-hover);
         }
 
 .message {
@@ -150,21 +150,21 @@
     }
 }
 #chatbot-input::placeholder {
-    color: var(--text-secondary); /* Use secondary text color */
-    opacity: 0.7; /* Make it slightly faded */
+    color: var(--text-secondary);
+    opacity: 0.7; 
 }
 
 
 .bot-message {
-    background-color: var(--bg-tertiary); /* Use theme tertiary bg */
-    color: var(--text-primary); /* Use theme primary text */
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary); 
     align-self: flex-start;
     border-bottom-left-radius: 5px;
 }
 
 .user-message {
-    background-color: var(--accent-primary); /* Use theme primary accent */
-    color: var(--text-on-light-accent); /* Text on light green */
+    background-color: var(--accent-primary);
+    color: var(--text-on-light-accent); 
     align-self: flex-end;
     border-bottom-right-radius: 5px;
 }
@@ -175,13 +175,28 @@
     transition: opacity 0.3s ease-out;
 }
 
+.message h1, .message h2, .message h3 {
+    margin-top: 0.8em;
+    margin-bottom: 0.4em;
+}
+
+.message ul, .message ol {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding-left: 25px; 
+}
+
+.message li {
+    margin-bottom: 0.2em;
+}
+
 .typing-indicator {
     display: flex;
     align-items: center;
     padding: 10px 15px;
     margin-bottom: 12px;
     align-self: flex-start;
-    background-color: var(--bg-tertiary); /* Match bot message bg */
+    background-color: var(--bg-tertiary); 
     border-radius: 20px;
     border-bottom-left-radius: 5px;
     opacity: 0;
@@ -192,7 +207,7 @@
     .typing-indicator span {
         height: 8px;
         width: 8px;
-        background-color: var(--text-secondary); /* Use secondary text for dots */
+        background-color: var(--text-secondary); 
         border-radius: 50%;
         display: inline-block;
         margin: 0 2px;
@@ -228,15 +243,15 @@
     display: flex;
     align-items: center;
     padding: 12px 15px;
-    border-top: 1px solid var(--border-color); /* Use theme border */
-    background-color: var(--bg-secondary); /* Use theme secondary bg */
+    border-top: 1px solid var(--border-color); 
+    background-color: var(--bg-secondary);
 }
 
 #chatbot-input {
     flex-grow: 1;
     border: none;
-    background-color: var(--bg-tertiary); /* Use theme tertiary bg */
-    color: var(--text-primary); /* Use theme text */
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary); 
     border-radius: 20px;
     padding: 10px 18px;
     margin-right: 10px;
@@ -246,13 +261,13 @@
 }
 
     #chatbot-input:focus {
-        background-color: var(--bg-hover); /* Use theme hover bg */
+        background-color: var(--bg-hover); 
     }
 
 #chatbot-send-btn {
-    background-color: var(--accent-primary); /* Use theme accent */
+    background-color: var(--accent-primary);
     border: none;
-    color: var(--text-on-light-accent); /* Text on light green */
+    color: var(--text-on-light-accent);
     font-size: 16px;
     cursor: pointer;
     padding: 0;
@@ -266,7 +281,7 @@
 }
 
     #chatbot-send-btn:hover {
-        background-color: var(--link-hover-color); /* Use link hover color */
+        background-color: var(--link-hover-color);
     }
 
     #chatbot-send-btn:active {
@@ -284,3 +299,23 @@
         transform: scale(0.9) translateY(10px);
     }
 }
+
+.chat-message.bot .message-text { 
+    padding: 10px; 
+    border-radius: 10px; 
+    background-color: #f1f0f0; 
+    color: #333; 
+    align-self: flex-start; 
+    white-space: pre-wrap;
+    word-wrap: break-word; 
+}
+
+    .chat-message.bot .message-text ul {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        padding-left: 20px; 
+    }
+
+    .chat-message.bot .message-text li {
+        margin-bottom: 3px; 
+    }

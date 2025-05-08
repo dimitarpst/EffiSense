@@ -7,11 +7,11 @@ using OpenAI_API;
 using OpenAI_API.Chat;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Configuration; // Crucial for _configuration
-using System;                            // For Random, DateTime etc.
-using System.Collections.Generic;      // For List<T>
-using System.Linq;                       // For .Any(), .OrderBy() etc.
-using System.Threading.Tasks;          // For Task, async/await
+using Microsoft.Extensions.Configuration;
+using System;                          
+using System.Collections.Generic;      
+using System.Linq;                     
+using System.Threading.Tasks;         
 
 namespace EffiSense.Controllers
 {
@@ -473,7 +473,7 @@ namespace EffiSense.Controllers
                     return new List<string> { $"Error: OpenAI API Key Missing for prompt: {prompt.Substring(0, Math.Min(prompt.Length, 30))}" };
                 }
 
-                var openAiApi = new OpenAIAPI(apiKey); // Consider making this a field if used frequently outside this method
+                var openAiApi = new OpenAIAPI(apiKey);
                 var chatRequest = new ChatRequest
                 {
                     Model = "gpt-3.5-turbo",
@@ -483,7 +483,7 @@ namespace EffiSense.Controllers
                         new ChatMessage(ChatMessageRole.User, prompt)
                     },
                     MaxTokens = maxTokens,
-                    Temperature = 0.75 // Slightly increased for more variety
+                    Temperature = 0.75 
                 };
 
                 var chatResult = await openAiApi.Chat.CreateChatCompletionAsync(chatRequest);
@@ -492,8 +492,8 @@ namespace EffiSense.Controllers
                     string response = chatResult.Choices[0].Message.TextContent.Trim();
                     generatedItems = response.Split('\n', StringSplitOptions.RemoveEmptyEntries)
                                            .Select(item => item.Trim())
-                                           .Where(item => !string.IsNullOrWhiteSpace(item) && item.Length > 2) // Basic filter for too short/empty lines
-                                           .Select(item => Regex.Replace(item, @"^\s*[\d-*#]+\.?\s*", "")) // More robust removal of leading list markers
+                                           .Where(item => !string.IsNullOrWhiteSpace(item) && item.Length > 2)
+                                           .Select(item => Regex.Replace(item, @"^\s*[\d-*#]+\.?\s*", ""))
                                            .Distinct(StringComparer.OrdinalIgnoreCase)
                                            .ToList();
 

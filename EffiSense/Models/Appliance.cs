@@ -25,7 +25,7 @@ public class Appliance
     public string? EfficiencyRating { get; set; }
 
     [DataType(DataType.MultilineText)]
-    [StringLength(500, ErrorMessage = "Notes cannot be longer than 500 characters.")]
+    [StringLength(2000, ErrorMessage = "Notes cannot be longer than 2000 characters.")]
     public string? Notes { get; set; }
 
     [DataType(DataType.Date)]

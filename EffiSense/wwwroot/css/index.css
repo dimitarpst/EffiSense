@@ -164,7 +164,7 @@
 
 .card-title-brand-group {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     margin-bottom: 0.1rem;
 }
 
@@ -204,6 +204,11 @@
     line-height: 1.4;
     color: var(--text-secondary);
 }
+
+
+
+
+
 
     .card-location-address span[title] {
         display: inline-block;

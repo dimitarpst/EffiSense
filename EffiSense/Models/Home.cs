@@ -40,7 +40,7 @@ public class Home
     public int? YearBuilt { get; set; }
 
     [DataType(DataType.MultilineText)]
-    [StringLength(500, ErrorMessage = "Description cannot be longer than 500 characters.")]
+    [StringLength(2000, ErrorMessage = "Description cannot be longer than 2000 characters.")]
     public string? Description { get; set; }
 
     [Required]

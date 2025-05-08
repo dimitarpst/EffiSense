@@ -48,7 +48,12 @@
                         <span class="card-brand-text">@Model.Appliance.Home.HouseName</span>
                     }
                 </div>
-                <p class="card-home-info-header">@Model.Date.ToString("dd MMM yyyy, HH:mm")</p>
+                <p class="card-home-info-header">
+                    @{
+                        var combinedDateTime = Model.Date.Date + Model.Time.TimeOfDay;
+                    }
+                    @combinedDateTime.ToString("dd MMM yyyy, HH:mm") @* Format the combined value *@
+                </p>
             </div>
         </div>
 
